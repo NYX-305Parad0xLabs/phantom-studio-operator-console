@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 
 import ReviewPage from "@/app/review/page";
 import { Providers } from "@/app/providers";
+import { ControlPlaneClient, mockRun } from "@/lib/api/controlPlane";
 
 describe("ReviewPage", () => {
   it("renders clip list and preview headings", () => {
@@ -85,5 +86,37 @@ describe("ReviewPage", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: /Flag cue for rewrite/i })[0]);
     expect(screen.getByText(/Flagged cue-001 for rewrite/)).toBeInTheDocument();
+  });
+
+  it("submits an approval decision", async () => {
+    const spy = vi
+      .spyOn(ControlPlaneClient, "approveRun")
+      .mockResolvedValue(mockRun);
+
+    render(
+      <Providers>
+        <ReviewPage />
+      </Providers>,
+    );
+
+    const submitButton = screen.getByRole("button", { name: /Submit decision/i });
+    fireEvent.click(submitButton);
+
+    expect(await screen.findByText(/approve recorded/i)).toBeInTheDocument();
+    expect(spy).toHaveBeenCalled();
+
+    spy.mockRestore();
+  });
+
+  it("renders run history entries", () => {
+    render(
+      <Providers>
+        <ReviewPage />
+      </Providers>,
+    );
+
+    expect(screen.getByText(/Run history/)).toBeInTheDocument();
+    expect(screen.getByText(/Automated QA pass/)).toBeInTheDocument();
+    expect(screen.getByText(/Ready for publish scheduling/)).toBeInTheDocument();
   });
 });

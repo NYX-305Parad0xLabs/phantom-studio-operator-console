@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { ClipCard } from "@/components/review/ClipCard";
 import { CaptionReviewPanel } from "@/components/review/CaptionReviewPanel";
 import { mockClipCandidates } from "@/lib/review/clip";
+import { DecisionPanel } from "@/components/review/DecisionPanel";
+import { RunHistoryPanel } from "@/components/review/RunHistoryPanel";
 
 type CompareMode = "single" | "compare";
 
@@ -168,6 +170,11 @@ export default function ReviewPage() {
           </p>
         </div>
         <CaptionReviewPanel />
+      </section>
+
+      <section className="space-y-4 lg:grid lg:grid-cols-[1.1fr_0.9fr] lg:gap-6">
+        <DecisionPanel runId="run-123" />
+        <RunHistoryPanel />
       </section>
     </div>
   );

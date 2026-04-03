@@ -2,7 +2,7 @@ import { controlPlaneBaseUrl, operatorAuthToken } from "@/lib/config";
 
 import { runStageOrder, RunStage, RunStageStatus } from "@/lib/runs/status";
 
-const mockRun = {
+export const mockRun = {
   id: "run-123",
   project: "original-crew",
   status: "ready",
@@ -85,6 +85,12 @@ export type IntakeSubmission = {
   syntheticDisclosure?: string;
 };
 
+export type DecisionSubmission = {
+  decisionType: "approve" | "reject" | "regenerate";
+  notes: string;
+  artifactScope: string;
+};
+
 export const ControlPlaneClient = {
   async listRuns(): Promise<WorkflowRunSummary[]> {
     if (!controlPlaneBaseUrl) {
@@ -100,5 +106,23 @@ export const ControlPlaneClient = {
   },
   async submitRun(payload: IntakeSubmission): Promise<WorkflowRunDetail> {
     return request("/workflow-runs", { method: "POST", body: payload });
+  },
+  async approveRun(runId: string, payload: DecisionSubmission) {
+    return request(`/workflow-runs/${runId}/approve`, {
+      method: "POST",
+      body: payload,
+    });
+  },
+  async rejectRun(runId: string, payload: DecisionSubmission) {
+    return request(`/workflow-runs/${runId}/reject`, {
+      method: "POST",
+      body: payload,
+    });
+  },
+  async requestRegenerate(runId: string, payload: DecisionSubmission) {
+    return request(`/workflow-runs/${runId}/request-regenerate`, {
+      method: "POST",
+      body: payload,
+    });
   },
 };
