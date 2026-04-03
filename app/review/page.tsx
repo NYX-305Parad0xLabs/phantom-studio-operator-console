@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ClipCard } from "@/components/review/ClipCard";
+import { CaptionReviewPanel } from "@/components/review/CaptionReviewPanel";
 import { mockClipCandidates } from "@/lib/review/clip";
 
 type CompareMode = "single" | "compare";
@@ -152,6 +153,22 @@ export default function ReviewPage() {
           </Card>
         </div>
       </div>
+
+      <section className="space-y-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.4em] text-paradox-gray-500">
+            Caption Review
+          </p>
+          <h2 className="text-2xl font-semibold text-white">
+            Inspect captions & localization
+          </h2>
+          <p className="text-sm text-paradox-gray-400">
+            Timed cues, overlay previews, and translation diffs are surfaced so
+            operators can approve or request rewrites.
+          </p>
+        </div>
+        <CaptionReviewPanel />
+      </section>
     </div>
   );
 }

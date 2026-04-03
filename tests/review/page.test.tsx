@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 import ReviewPage from "@/app/review/page";
 import { Providers } from "@/app/providers";
@@ -41,5 +41,49 @@ describe("ReviewPage", () => {
     );
 
     expect(screen.getByText(/Strong hook/i)).toBeInTheDocument();
+  });
+
+  it("displays caption cues and flag actions", () => {
+    render(
+      <Providers>
+        <ReviewPage />
+      </Providers>,
+    );
+
+    expect(screen.getByText(/Emojis: 🔥 🚀/i)).toBeInTheDocument();
+    const flagButtons = screen.getAllByRole("button", {
+      name: /Flag cue for rewrite/i,
+    });
+    expect(flagButtons.length).toBeGreaterThan(0);
+  });
+
+  it("switches translation tabs and shows localized cues", () => {
+    render(
+      <Providers>
+        <ReviewPage />
+      </Providers>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Spanish" }));
+    expect(screen.getByText(/Acabamos de cerrar/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "French" }));
+    expect(screen.getByText(/Nous venons de conclure/i)).toBeInTheDocument();
+  });
+
+  it("approves captions and highlights diff", () => {
+    render(
+      <Providers>
+        <ReviewPage />
+      </Providers>,
+    );
+
+    const approveButton = screen.getByRole("button", { name: /Approve captions/i });
+    fireEvent.click(approveButton);
+
+    expect(screen.getByRole("button", { name: /Captions approved/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole("button", { name: /Flag cue for rewrite/i })[0]);
+    expect(screen.getByText(/Flagged cue-001 for rewrite/)).toBeInTheDocument();
   });
 });
