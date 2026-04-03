@@ -8,6 +8,11 @@ const mockRun = {
   clipCount: 3,
 };
 
+const mockProject = {
+  id: "proj-abc",
+  name: "original-crew",
+};
+
 type RequestOptions = {
   method?: "GET" | "POST";
   body?: unknown;
@@ -15,6 +20,15 @@ type RequestOptions = {
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   if (!controlPlaneBaseUrl) {
+    if (path.startsWith("/projects")) {
+      return Promise.resolve(mockProject as unknown as T);
+    }
+    if (path.startsWith("/workflow-runs")) {
+      return Promise.resolve(mockRun as unknown as T);
+    }
+    if (path.startsWith("/runs")) {
+      return Promise.resolve([mockRun] as unknown as T);
+    }
     return Promise.resolve(mockRun as unknown as T);
   }
 
@@ -36,6 +50,17 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
 export type WorkflowRunSummary = typeof mockRun;
 
+export type IntakeSubmission = {
+  sourceType: "url" | "upload";
+  sourceReference: string;
+  projectId: string;
+  clipMode: "single_best" | "series_max_3";
+  targetPlatforms: string[];
+  targetLanguages: string[];
+  styleNotes?: string;
+  syntheticDisclosure?: string;
+};
+
 export const ControlPlaneClient = {
   async listRuns(): Promise<WorkflowRunSummary[]> {
     if (!controlPlaneBaseUrl) {
@@ -46,7 +71,10 @@ export const ControlPlaneClient = {
   async fetchRun(runId: string): Promise<WorkflowRunSummary> {
     return request(`/runs/${runId}`);
   },
-  async submitIntake(payload: { sourceUrl: string; mode: "single_best" | "series" }) {
+  async createProject(payload: { name: string }) {
+    return request("/projects", { method: "POST", body: payload });
+  },
+  async submitRun(payload: IntakeSubmission): Promise<WorkflowRunSummary> {
     return request("/workflow-runs", { method: "POST", body: payload });
   },
 };
