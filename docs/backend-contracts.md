@@ -14,11 +14,13 @@ The operator console speaks to the control plane and provider gateway via the ty
 
 ## Provider gateway (`lib/api/providerGateway.ts`)
 
-- **Endpoints** (stubbed until live):
-  - `/ingest`, `/transcribe`, `/analyze`, `/select-clip`, `/render`, `/export` etc. The console templates data from `lib/export/mockReview.ts` and `lib/provenance/mock.ts` for the provenance/review panels.
-  - `POST /publish-jobs` / `/publish-jobs/{jobId}` for scheduling.
-- **Data contracts**: typed input/output shapes mirror the stub modules under `lib/export`, `lib/provenance`, and `lib/publish`.
-- When wiring real services, ensure the provider gateway returns the metadata used by the console (captions, translations, voice/lip-sync, manifest checksums) and keeps the same field names as the mock modules.
+- **Live endpoints** (enabled when `NEXT_PUBLIC_INTEGRATION_MODE=live` and the provider URL/token are configured):
+  - `/api/sources`, `/api/jobs/ingest`, `/api/jobs/transcribe/{sourceId}`, `/api/jobs/analyze/{transcriptId}`, `/api/analyses/{analysisId}`, and `/api/clips/{clipId}` feed the intake, ingest pipeline, and clip review surfaces with real assets, transcripts, analysis signals, and rationale.
+
+- **Stubbed endpoints** (remain mocked until additional backend contracts are wired):
+  - Caption generation, translation batches, voice tracks, lip-sync renders, edit/render/export orchestration, and publish scheduling still draw from the stub modules under `lib/export`, `lib/provenance`, and `lib/publish`.
+
+- **Data contracts**: The console shapes mirror the provider gateway’s Pydantic models. Keep the JSON field names in snake_case so they align with the FastAPI schemas, and re-use the existing `ProviderGatewayClient` helpers when wiring new endpoints.
 
 ## Auth & tokens
 

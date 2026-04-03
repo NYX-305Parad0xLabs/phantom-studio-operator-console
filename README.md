@@ -1,11 +1,11 @@
 # Phantom Studio Operator Console
 
-This repository hosts the operator-facing console for Phantom Studio. It renders intake, runs, review, export, publish, provenance, and settings surfaces on top of the control plane and provider gateway. All backend responses are currently mocked, so the UI focuses on human review, disclosure, and approval guardrails rather than executing provider workloads.
+This repository hosts the operator-facing console for Phantom Studio. It renders intake, runs, review, export, publish, provenance, and settings surfaces on top of the control plane and provider gateway. In integration mode, the intake flow now passes through the provider gateway’s ingest, transcription, analysis, and clip selection workloads, while other provider responses remain mocked so the UI keeps attention on human review, disclosure, and approval guardrails.
 
 ## What this console currently does
 
 - Shows a dashboard, runs table, and descriptive timeline using the placeholder data in `lib/runs` while operators inspect stage completion. When integration-mode reads are live, the global runs list and timeline surfaces the backend-provided summaries, not just mocks.
-- Provides typed `ControlPlaneClient` and `ProviderGatewayClient` classes with bearer-token scaffolding; they default to mocked responses until real endpoints are wired. The settings health view also now hits the real `/health/live` and `/health/ready` endpoints when `mock` mode is disabled.
+- Provides typed `ControlPlaneClient` and `ProviderGatewayClient` classes with bearer-token scaffolding. When the provider gateway URL/token are configured and `NEXT_PUBLIC_INTEGRATION_MODE=live`, the intake flow submits to the provider’s ingest, transcription, analysis, and clip selection endpoints; otherwise the clients fall back to mocked responses and the UI shows explanatory badges. The settings health view also now hits the real `/health/live` and `/health/ready` endpoints when `mock` mode is disabled.
 - Surfaces intake, clip review, caption review, translation, voice/lip-sync, rendering, export, publish scheduling, provenance, and settings UI panels filled with illustrative data.
 - Highlights safety signposts: only original/licensed inputs, disclosure labels for synthetic characters, policy and QA status before export, and manual approval indicators before publish scheduling.
 
@@ -21,23 +21,25 @@ UI copy and docs repeatedly remind operators about rights assertions, disclosure
 
 ## Integration mode
 
-Set `NEXT_PUBLIC_INTEGRATION_MODE` to `live` when the control plane and provider gateway URLs and tokens are configured; this enables the new live health checks along with the read-only runs, run detail, provenance, publish job, and health endpoints. When `integrationMode` is `mock` (the default) or when the required run/job IDs are not supplied, mock datasets are shown instead and a banner explains that exact IDs are required for live reads.
+Set `NEXT_PUBLIC_INTEGRATION_MODE` to `live` when the control plane and provider gateway URLs and tokens are configured; this enables the new live health checks along with the read-only runs, run detail, provenance, publish job, and health endpoints. It also flips on the provider gateway’s ingest → transcription → analysis → clip selection flow so that the review page surfaces real clip timing, scores, and rationale whenever the matching source/transcript/analysis IDs are saved locally. When `integrationMode` is `mock` (the default) or when the required run/job IDs are not supplied, mock datasets are shown instead and a banner explains that exact IDs are required for live reads.
 
 ## Live vs. mock coverage
 
 ### Live-read surfaces
 
 - Runs list, run detail, provenance manifest, and publish job status now request the real control-plane endpoints whenever `NEXT_PUBLIC_INTEGRATION_MODE=live` and the backend is reachable; they surface actual stage labels, manifests, attempts, and timestamps instead of mocked placeholders.
+- The intake flow submits to the provider gateway ingest, transcription, viral analysis, and clip selection endpoints in live mode, so the review page’s clip cards show real rationale, transcript excerpts, and timing instead of the static mock set.
 - Settings health panels query both control-plane and provider-gateway `/health/live`+`/health/ready` endpoints in live mode. The integration-mode badge in the toolbar labels whether live reads are running and the cards expose any degraded details returned by the backend.
 
 ### Explicit mock fallbacks
 
-- The intake page, decision submission panel, render/export placeholders, and publish job execution screen still operate against the mock adapters under `lib/api`. These surfaces still describe the eventual workflow without submitting actual mutations.
+- Caption review, translation tabs, voice/lip-sync previews, render/export orchestration, and publish job execution screen still operate against the mock adapters under `lib/api`. These surfaces still describe the eventual workflow without submitting actual mutations.
+- Any area that depends on a future backend capability (e.g., localized caption translation, voice/lip-sync detail persistence) highlights that it is mocked when live mode is disabled or when the required backend data is missing.
 - Any area that depends on a future backend capability (e.g., localized caption translation, voice/lip-sync detail persistence) highlights that it is mocked when live mode is disabled or when the required backend data is missing.
 
 ## What is not wired yet
 
-- Intake creation, approve/reject/regenerate mutations, render/export job creation, and publish execution remain mocked to keep the operator experience focused on human review and policy enforcement.
+- Approve/reject/request-regenerate mutations, render/export job creation, and publish execution remain mocked to keep the operator experience focused on human review and policy enforcement.
 
 ## Local setup
 

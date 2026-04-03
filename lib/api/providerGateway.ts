@@ -245,7 +245,15 @@ export const ProviderGatewayClient = {
       () =>
         request<MediaSourceRead>("/api/sources", {
           method: "POST",
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            source_type: payload.sourceType,
+            media_kind: payload.mediaKind,
+            uri: payload.uri,
+            owner_assertion: payload.ownerAssertion,
+            rights_confirmed: payload.rightsConfirmed,
+            synthetic_character_name: payload.syntheticCharacterName,
+            synthetic_disclosure_label: payload.syntheticDisclosureLabel,
+          }),
         }),
       mockSource,
     );
@@ -276,7 +284,7 @@ export const ProviderGatewayClient = {
             source_id: payload.sourceId,
             rights_confirmed: payload.rightsConfirmed,
             url: payload.url,
-            target_format: payload.targetFormat,
+            ...(payload.targetFormat ? { target_format: payload.targetFormat } : {}),
           }),
         }),
       {
@@ -367,10 +375,7 @@ export const ProviderGatewayClient = {
 
   async analyzeTranscript(transcriptId: number): Promise<ViralAnalysisRead> {
     return liveOrMock(
-      () =>
-        request<ViralAnalysisRead>(`/api/jobs/analyze/${transcriptId}`, {
-          method: "POST",
-        }),
+      () => request<ViralAnalysisRead>(`/api/jobs/analyze/${transcriptId}`, { method: "POST" }),
       mockAnalysis,
     );
   },
@@ -383,10 +388,10 @@ export const ProviderGatewayClient = {
   },
 
   async fetchTranscript(transcriptId: number): Promise<TranscriptionDetail> {
-    if (!shouldUseLiveProvider) {
-      return mockTranscription;
-    }
-    return request<TranscriptionDetail>(`/api/transcripts/${transcriptId}`);
+    return liveOrMock(
+      () => request<TranscriptionDetail>(`/api/transcripts/${transcriptId}`),
+      mockTranscription,
+    );
   },
 
   async fetchClip(clipId: number): Promise<ClipArtifactRead> {
