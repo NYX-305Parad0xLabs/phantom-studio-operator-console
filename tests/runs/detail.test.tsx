@@ -8,7 +8,6 @@ vi.mock("next/navigation", () => ({
 import RunDetailPage from "@/app/runs/[runId]/page";
 import { ControlPlaneClient, RunStageRecord } from "@/lib/api/controlPlane";
 import { Providers } from "@/app/providers";
-import { RunStageStatus } from "@/lib/runs/status";
 
 const stageEntries: RunStageRecord[] = [
   {
