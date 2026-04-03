@@ -1,4 +1,7 @@
+"use client";
+
 import { PageTemplate } from "@/components/page/PageTemplate";
+import { ExportReviewPanel } from "@/components/exports/ExportReviewPanel";
 
 const sections = [
   {
@@ -22,6 +25,8 @@ export default function ExportsPage() {
       title="Exports"
       subtitle="Review normalized bundles"
       sections={sections}
-    />
+    >
+      <ExportReviewPanel />
+    </PageTemplate>
   );
 }
