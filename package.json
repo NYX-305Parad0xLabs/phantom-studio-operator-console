@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify": "sh scripts/verify.sh",
+    "dev:smoke": "ts-node scripts/dev-smoke.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -37,6 +39,7 @@
     "jsdom": "^29.0.1",
     "prettier": "^3.8.1",
     "tailwindcss": "^4",
+    "ts-node": "^10.0.0",
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.2"
