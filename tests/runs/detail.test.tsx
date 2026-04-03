@@ -2,22 +2,23 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 vi.mock("next/navigation", () => ({
-  useParams: () => ({ runId: "run-123" }),
+  useParams: () => ({ runId: "123" }),
 }));
 
 import RunDetailPage from "@/app/runs/[runId]/page";
 import { ControlPlaneClient, RunStageRecord } from "@/lib/api/controlPlane";
 import { Providers } from "@/app/providers";
+import { runStageOrder } from "@/lib/runs/status";
 
 const stageEntries: RunStageRecord[] = [
   {
-    stage: "ingest",
-    status: "complete",
+    stage: runStageOrder[0],
+    status: "completed",
     startedAt: new Date(Date.now() - 600000).toISOString(),
     completedAt: new Date(Date.now() - 590000).toISOString(),
   },
   {
-    stage: "transcription",
+    stage: runStageOrder[1],
     status: "running",
     startedAt: new Date(Date.now() - 300000).toISOString(),
     completedAt: undefined,
@@ -25,10 +26,10 @@ const stageEntries: RunStageRecord[] = [
 ];
 
 const mockDetail = {
-  id: "run-123",
+  id: 123,
   project: "studio",
   status: "running",
-  stage: "transcription",
+  stage: runStageOrder[1],
   clipCount: 2,
   sourceType: "url",
   platforms: ["tiktok"],
@@ -46,8 +47,8 @@ describe("RunDetailPage", () => {
       </Providers>,
     );
 
-    expect(await screen.findByText("Run run-123")).toBeVisible();
-    expect(await screen.findByText("Ingest")).toBeVisible();
-    expect(await screen.findByText("Transcription")).toBeVisible();
+    expect(await screen.findByText("Run 123")).toBeVisible();
+    expect(await screen.findByText("Character prep")).toBeVisible();
+    expect(await screen.findByText("Image")).toBeVisible();
   });
 });

@@ -8,16 +8,16 @@ import { runStageOrder, RunStageStatus } from "@/lib/runs/status";
 
 const stageRecords: RunStageRecord[] = runStageOrder.map((stage, index) => ({
   stage,
-  status: (index === 0 ? "complete" : "pending") as RunStageStatus,
+  status: (index === 0 ? "completed" : "pending") as RunStageStatus,
   startedAt: new Date().toISOString(),
   completedAt: index === 0 ? new Date().toISOString() : undefined,
 }));
 
 const mockRun = {
-  id: "run-abc",
+  id: 123,
   project: "studio",
   status: "ready",
-  stage: "ingest",
+  stage: runStageOrder[0],
   clipCount: 1,
   sourceType: "url",
   platforms: ["tiktok"],
@@ -35,7 +35,7 @@ describe("RunsPage", () => {
       </Providers>,
     );
 
-    expect(await screen.findByText("run-abc")).toBeInTheDocument();
+    expect(await screen.findByText("123")).toBeInTheDocument();
     expect(screen.getByText("studio")).toBeInTheDocument();
   });
 
@@ -48,6 +48,6 @@ describe("RunsPage", () => {
       </Providers>,
     );
 
-    expect(await screen.findByText("run-abc")).toBeInTheDocument();
+    expect(await screen.findByText("123")).toBeInTheDocument();
   });
 });

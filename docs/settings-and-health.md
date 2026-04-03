@@ -1,20 +1,29 @@
 # Settings & Health
 
-The settings page gives operators visibility into the console’s connectivity, authorization readiness, and diagnostics without leaking secrets.
+This doc explains how the operator console tracks connectivity, diagnostics, and integration mode so human operators can trust what they see in the settings panel.
+
+## Integration mode and live health checks
+
+- When `NEXT_PUBLIC_INTEGRATION_MODE=live` (and the required URLs/tokens are provided), the console calls `/health/live` and `/health/ready` on both the control plane and provider gateway. Each connection panel reflects the live/ready badge, timestamp, and ready message returned by the backend.
+- When live mode is disabled or any of the live calls fail, the UI falls back to the mock statuses defined in `mockConnectionStatuses` and surfaces the offline/degraded badges plus a note that the data is mocked.
+- The health dashboard duplicates those statuses in a simple timeline so operators see the last fetch time and whether the ready signal dropped. The integration-mode badge in the toolbar labels the current mode as “mock” or “live”.
 
 ## Connection panels
 
-- Control-plane and provider-gateway connection cards show the base URL, live/ready badges, last check time, and degraded messaging when a ready signal is missing.
-- Health dashboard duplicates the statuses in a timeline view, ensuring the operator can spot when a service dropped or is warming up.
+- Each panel shows the base URL, live/ready badges, and the last checked timestamp string. The badges switch to “Live”/“Ready” when the backend reports those states and to “Offline”/“Degraded” when the live endpoint is not healthy or when mock mode is active.
+- Smart messaging keeps secrets out of the UI: if a backend reports a detail string, the panel prints it as a diagnostic note but never the tokens themselves.
 
 ## Auth visibility
 
-- Auth status cards expose only whether the operator/provider tokens are configured—not the tokens themselves—so no credentials appear in the browser.
-- The panel also summarizes the localization around tokens to encourage operators to manage them via environment variables (see README).
+- Auth cards show whether the operator/provide tokens are configured and label them “configured” or “missing”.
+- The cards encourage environment-based overrides so operators do not type tokens directly in the browser.
 
-## Features & diagnostics
+## Feature & diagnostics
 
-- Feature flag panel lists current toggles with descriptions so wings can quickly see what preview behavior is enabled.
-- The health dashboard message includes the last fetch time and a simple “degraded” summary when ready checks fail.
-  
-Create new environment overrides via `.env.local` and restart the console to refresh the statuses; they remain read-only inside the UI.
+- Feature flag cards document the currently enabled toggles; they still run off the mock dataset because live feature management is not wired yet.
+- The health dashboard repeats the ready/last-check timeline so operators can correlate degraded states with review paths.
+
+## Local changes
+
+- Copy `.env.example` to `.env.local` and set the backend URLs and bearer tokens required for live mode.
+- Restart the console whenever you edit the connection strings so the health polling picks up the new values.

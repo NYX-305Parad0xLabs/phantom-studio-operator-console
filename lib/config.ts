@@ -8,3 +8,17 @@ export const operatorAuthToken =
 
 export const providerAuthToken =
   process.env.NEXT_PUBLIC_PROVIDER_TOKEN ?? "provider-token";
+
+export type IntegrationMode = "mock" | "live";
+const rawIntegrationMode = process.env.NEXT_PUBLIC_INTEGRATION_MODE?.toLowerCase() ?? "mock";
+export const integrationMode: IntegrationMode =
+  rawIntegrationMode === "live" ? "live" : "mock";
+export const isLiveIntegration = integrationMode === "live";
+
+export const defaultWorkflowRunId = Number(
+  process.env.NEXT_PUBLIC_DEFAULT_WORKFLOW_RUN_ID ?? "0",
+);
+
+export const defaultPublishJobId = Number(
+  process.env.NEXT_PUBLIC_DEFAULT_PUBLISH_JOB_ID ?? "0",
+);

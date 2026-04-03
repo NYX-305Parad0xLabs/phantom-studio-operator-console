@@ -173,7 +173,7 @@ export default function ReviewPage() {
       </section>
 
       <section className="space-y-4 lg:grid lg:grid-cols-[1.1fr_0.9fr] lg:gap-6">
-        <DecisionPanel runId="run-123" />
+        <DecisionPanel runId="123" />
         <RunHistoryPanel />
       </section>
     </div>

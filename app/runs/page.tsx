@@ -7,10 +7,16 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ControlPlaneClient } from "@/lib/api/controlPlane";
-import { statusBadgeMap, runStageOrder, RunStage, RunStageStatus } from "@/lib/runs/status";
+import { getStageLabel, statusBadgeMap, runStageOrder, RunStage, RunStageStatus } from "@/lib/runs/status";
 
 const stageFilters: (RunStage | "all")[] = ["all", ...runStageOrder];
-const statusFilters = ["all", "ready", "running", "queued", "blocked", "error"] as const;
+const statusFilters: (RunStageStatus | "all")[] = [
+  "all",
+  "pending",
+  "running",
+  "completed",
+  "failed",
+];
 
 export default function RunsPage() {
   const [stageFilter, setStageFilter] = useState<RunStage | "all">("all");
@@ -140,7 +146,7 @@ export default function RunsPage() {
                     <td className="px-3 py-3">{run.project}</td>
                     <td className="px-3 py-3 capitalize">{run.sourceType}</td>
                     <td className="px-3 py-3">
-                      {run.stage}
+                      {getStageLabel(run.stage)}
                     </td>
                     <td className="px-3 py-3">
                       <Badge variant={statusBadgeMap[mapRunStatus(run.status)]}>
@@ -148,7 +154,7 @@ export default function RunsPage() {
                       </Badge>
                     </td>
                     <td className="px-3 py-3">
-                      {new Date(run.updatedAt || "").toLocaleTimeString()}
+                      {run.updatedAt ? new Date(run.updatedAt).toLocaleTimeString() : "-"}
                     </td>
                     <td className="px-3 py-3">
                       {run.platforms?.join(", ") ?? "—"}
@@ -165,9 +171,8 @@ export default function RunsPage() {
 }
 
 function mapRunStatus(status: string): RunStageStatus {
-  if (status === "ready") return "complete";
+  if (status === "completed") return "completed";
   if (status === "running") return "running";
-  if (status === "blocked") return "blocked";
-  if (status === "error") return "failed";
+  if (status === "failed") return "failed";
   return "pending";
 }

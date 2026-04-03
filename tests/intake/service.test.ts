@@ -36,7 +36,7 @@ describe("intake service", () => {
       .mockResolvedValue({ id: "proj-1", name: "Original Creator" });
     const stageRecords = runStageOrder.map((stage, index) => ({
       stage,
-      status: (index === 0 ? "complete" : "pending") as RunStageStatus,
+      status: (index === 0 ? "completed" : "pending") as RunStageStatus,
       startedAt: new Date().toISOString(),
       completedAt: index === 0 ? new Date().toISOString() : undefined,
     }));
@@ -44,10 +44,10 @@ describe("intake service", () => {
     const submitSpy = vi
       .spyOn(ControlPlaneClient, "submitRun")
       .mockResolvedValue({
-        id: "run-1",
+        id: 1,
         project: "Original Creator",
         status: "queued",
-        stage: "ingest",
+        stage: "character_prepare",
         clipCount: 2,
         sourceType: "url",
         platforms: ["tiktok"],
@@ -59,7 +59,7 @@ describe("intake service", () => {
       .mockResolvedValue({ status: "queued", ingestId: "ingest-1" });
 
     const result = await submitIntakeRun(sampleValues);
-    expect(result.id).toBe("run-1");
+    expect(result.id).toBe(1);
     expect(projectSpy).toHaveBeenCalled();
     expect(submitSpy).toHaveBeenCalled();
     expect(providerSpy).toHaveBeenCalled();

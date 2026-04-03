@@ -31,13 +31,19 @@ export function DecisionPanel({ runId }: { runId: string }) {
       artifactScope: scope,
     };
 
+    const runNumber = Number(runId);
+    if (Number.isNaN(runNumber)) {
+      setStatus("error");
+      setMessage("Invalid run identifier.");
+      return;
+    }
     try {
       if (selectedType === "approve") {
-        await ControlPlaneClient.approveRun(runId, payload);
+        await ControlPlaneClient.approveRun(runNumber, payload);
       } else if (selectedType === "reject") {
-        await ControlPlaneClient.rejectRun(runId, payload);
+        await ControlPlaneClient.rejectRun(runNumber, payload);
       } else {
-        await ControlPlaneClient.requestRegenerate(runId, payload);
+        await ControlPlaneClient.requestRegenerate(runNumber, payload);
       }
       setStatus("success");
       setMessage(`${selectedType} recorded for ${scope}.`);

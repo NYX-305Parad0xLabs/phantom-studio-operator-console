@@ -1,4 +1,5 @@
 import { PageTemplate } from "@/components/page/PageTemplate";
+import { ProvenancePanel } from "@/components/provenance/ProvenancePanel";
 
 const sections = [
   {
@@ -21,6 +22,10 @@ export default function ProvenancePage() {
       title="Provenance"
       subtitle="Inspect traceability"
       sections={sections}
-    />
+    >
+      <div className="space-y-6">
+        <ProvenancePanel />
+      </div>
+    </PageTemplate>
   );
 }
