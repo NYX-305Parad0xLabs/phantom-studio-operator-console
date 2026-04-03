@@ -5,7 +5,7 @@ import PublishPage from "@/app/publish/page";
 import { Providers } from "@/app/providers";
 
 describe("PublishPage", () => {
-  it("renders scheduler and status cards", () => {
+  it("renders scheduler and status cards with mock write indicator", () => {
     render(
       <Providers>
         <PublishPage />
@@ -15,19 +15,23 @@ describe("PublishPage", () => {
     expect(screen.getByText(/Publish scheduling/)).toBeInTheDocument();
     expect(screen.getByText(/Publish status/)).toBeInTheDocument();
     expect(screen.getByText(/Publish attempts/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Mock writes/i).length).toBeGreaterThan(0);
   });
 
-  it("validates schedule input before submit", () => {
+  it("shows fallback message when live writes are disabled", () => {
     render(
       <Providers>
         <PublishPage />
       </Providers>,
     );
 
-    const submitButton = screen.getByRole("button", { name: /Schedule publish/i });
+    const submitButton = screen.getByRole("button", {
+      name: /Simulate scheduling/i,
+    });
     fireEvent.click(submitButton);
 
-    expect(screen.getByRole("button", { name: /Schedule publish/i })).toBeInTheDocument();
-    expect(screen.getByText(/Publishing requires an approved review decision/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Live writes are disabled; scheduling remains mocked/i),
+    ).toBeInTheDocument();
   });
 });

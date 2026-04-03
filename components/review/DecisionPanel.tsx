@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ControlPlaneClient } from "@/lib/api/controlPlane";
+import { isLiveIntegration } from "@/lib/config";
 import {
   decisionTypes,
   DecisionType,
@@ -62,9 +63,17 @@ export function DecisionPanel({ runId }: { runId: string }) {
           </p>
           <p className="text-lg font-semibold text-white">Approve / Reject / Regenerate</p>
         </div>
-        <Badge variant="outline" className="text-[10px]">
-          Auditable
-        </Badge>
+        <div className="flex gap-2">
+          <Badge variant="outline" className="text-[10px]">
+            Auditable
+          </Badge>
+          <Badge
+            variant={isLiveIntegration ? "success" : "muted"}
+            className="text-[10px] uppercase tracking-[0.3em]"
+          >
+            {isLiveIntegration ? "Live writes" : "Mock writes"}
+          </Badge>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">

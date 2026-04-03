@@ -1,5 +1,6 @@
 export type PublishTarget = {
   id: string;
+  slug: string;
   platform: string;
   account: string;
   label: string;
@@ -25,6 +26,7 @@ export type PublishJob = {
   runId: string;
   target: PublishTarget;
   schedule?: string;
+  scheduled_for?: string;
   captionOverride?: string;
   titleOverride?: string;
   status: PublishAttemptStatus;
@@ -32,15 +34,27 @@ export type PublishJob = {
 };
 
 export const mockPublishTargets: PublishTarget[] = [
-  { id: "pt-01", platform: "TikTok", account: "@paradox.studio", label: "Primary brand" },
-  { id: "pt-02", platform: "Instagram Reels", account: "paradox.click", label: "Creator hub" },
+  {
+    id: "pt-01",
+    slug: "tiktok",
+    platform: "TikTok",
+    account: "@paradox.studio",
+    label: "Primary brand",
+  },
+  {
+    id: "pt-02",
+    slug: "instagram",
+    platform: "Instagram Reels",
+    account: "paradox.click",
+    label: "Creator hub",
+  },
 ];
 
 export const mockPublishJob: PublishJob = {
   id: "publish-001",
   runId: "run-123",
   target: mockPublishTargets[0],
-  schedule: "2026-04-04T17:30:00Z",
+  scheduled_for: "2026-04-04T17:30:00Z",
   captionOverride: "Bold synthetic reveal, tagging the team.",
   titleOverride: "Phase One: Disclosure-ready short",
   status: "scheduled",

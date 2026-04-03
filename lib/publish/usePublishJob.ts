@@ -7,7 +7,7 @@ import { mockPublishJob } from "@/lib/publish/mock";
 const fallbackJob: PublishJobDetail = {
   id: Number(mockPublishJob.id) || 0,
   status: mockPublishJob.status,
-  scheduled_for: mockPublishJob.schedule,
+  scheduled_for: mockPublishJob.scheduled_for ?? mockPublishJob.schedule,
   attempts: mockPublishJob.attempts.map((attempt, index) => ({
     id: index,
     status: attempt.status,
@@ -28,5 +28,5 @@ export function usePublishJobData() {
   const usesLive = integrationMode === "live" && jobId > 0 && !query.isError;
   const job = usesLive ? query.data ?? fallbackJob : fallbackJob;
 
-  return { job, isMock: !usesLive, isLoading: query.isLoading };
+  return { job, isMock: !usesLive, isLoading: query.isLoading, query, jobId };
 }

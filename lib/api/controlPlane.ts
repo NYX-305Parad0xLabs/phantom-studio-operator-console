@@ -24,7 +24,17 @@ export const mockRun = {
       index < runStageOrder.length - 2
         ? new Date(Date.now() - (runStageOrder.length - index - 1) * 60000).toISOString()
         : undefined,
-  })),
+    })),
+  assets: [
+    {
+      id: 1,
+      asset_type: "lipsync",
+      provider: "mock-provider",
+      uri: "https://example.com/mock-lipsync.mp4",
+      kind: "lipsync",
+      asset_metadata: { duration_seconds: 30, has_audio: true },
+    },
+  ],
 };
 
 const mockProject = {
@@ -172,6 +182,17 @@ export type PublishJobDetail = {
   };
 };
 
+export type PublishPreparePayload = {
+  assetUri: string;
+  platformSlug: string;
+  metadata?: Record<string, unknown>;
+};
+
+export type PublishSchedulePayload = {
+  scheduledFor: string;
+  note?: string;
+};
+
 const mockProvenance: ProvenanceDetail = {
   workflow_run_id: mockRun.id,
   manifest: {
@@ -235,15 +256,12 @@ export const ControlPlaneClient = {
   },
 
   async fetchRun(runId: number): Promise<WorkflowRunSummary> {
-    if (integrationMode === "live") {
-      try {
-        const run = await request<WorkflowRunResponseRaw>(`/workflow-runs/${runId}`);
-        return mapLiveRun(run);
-      } catch (error) {
-        console.warn("Control plane run detail unavailable", error);
-      }
-    }
-    return mockRun;
+    const run = await loadRunDetail(runId);
+    return mapLiveRun(run);
+  },
+
+  async fetchRunDetail(runId: number): Promise<WorkflowRunResponseRaw> {
+    return loadRunDetail(runId);
   },
 
   async createProject(payload: { name: string }) {
@@ -296,4 +314,58 @@ export const ControlPlaneClient = {
     }
     return mockPublishJob;
   },
+
+  async preparePublish(runId: number, payload: PublishPreparePayload): Promise<PublishJobDetail> {
+    return request<PublishJobDetail>(`/workflow-runs/${runId}/prepare-publish`, {
+      method: "POST",
+      body: {
+        asset_uri: payload.assetUri,
+        platform_slug: payload.platformSlug,
+        metadata: payload.metadata ?? {},
+      },
+    });
+  },
+
+  async schedulePublishJob(jobId: number, payload: PublishSchedulePayload): Promise<PublishJobDetail> {
+    return request<PublishJobDetail>(`/publish-jobs/${jobId}/schedule`, {
+      method: "POST",
+      body: {
+        scheduled_for: payload.scheduledFor,
+        note: payload.note,
+      },
+    });
+  },
+
+  async executePublishJob(jobId: number): Promise<PublishJobDetail> {
+    return request<PublishJobDetail>(`/publish-jobs/${jobId}/execute`, {
+      method: "POST",
+    });
+  },
 };
+
+const mockRunDetail: WorkflowRunResponseRaw = {
+  id: mockRun.id,
+  project_id: 1,
+  stage: mockRun.stage,
+  status: mockRun.status,
+  review_status: "approved",
+  workflow_metadata: {
+    project_name: mockRun.project,
+    sourceType: mockRun.sourceType,
+    platforms: mockRun.platforms,
+    updatedAt: mockRun.updatedAt,
+    clipCount: mockRun.clipCount,
+  },
+  assets: mockRun.assets,
+};
+
+async function loadRunDetail(runId: number): Promise<WorkflowRunResponseRaw> {
+  if (integrationMode === "live") {
+    try {
+      return await request<WorkflowRunResponseRaw>(`/workflow-runs/${runId}`);
+    } catch (error) {
+      console.warn("Control plane run detail unavailable", error);
+    }
+  }
+  return mockRunDetail;
+}

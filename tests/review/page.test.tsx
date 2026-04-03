@@ -18,6 +18,15 @@ describe("ReviewPage", () => {
     expect(screen.getByText("Preview")).toBeInTheDocument();
   });
 
+  it("shows mock write indicator", () => {
+    render(
+      <Providers>
+        <ReviewPage />
+      </Providers>,
+    );
+    expect(screen.getByText(/Mock writes/i)).toBeInTheDocument();
+  });
+
   it("allows toggling compare mode and selecting candidate", () => {
     render(
       <Providers>
