@@ -1,11 +1,25 @@
 import { controlPlaneBaseUrl, operatorAuthToken } from "@/lib/config";
 
+import { runStageOrder, RunStage, RunStageStatus } from "@/lib/runs/status";
+
 const mockRun = {
   id: "run-123",
   project: "original-crew",
   status: "ready",
   stage: "review",
   clipCount: 3,
+  sourceType: "url",
+  platforms: ["tiktok"],
+  updatedAt: new Date().toISOString(),
+  stages: runStageOrder.map((stage, index) => ({
+    stage,
+    status: (index === 0 ? "complete" : index === 1 ? "running" : "pending") as RunStageStatus,
+    startedAt: new Date(Date.now() - (runStageOrder.length - index) * 60000).toISOString(),
+    completedAt:
+      index === 0
+        ? new Date(Date.now() - (runStageOrder.length - index - 1) * 60000).toISOString()
+        : undefined,
+  })),
 };
 
 const mockProject = {
@@ -49,6 +63,16 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 }
 
 export type WorkflowRunSummary = typeof mockRun;
+export type RunStageRecord = {
+  stage: RunStage;
+  status: RunStageStatus;
+  startedAt: string;
+  completedAt: string | undefined;
+};
+
+export type WorkflowRunDetail = WorkflowRunSummary & {
+  stages: RunStageRecord[];
+};
 
 export type IntakeSubmission = {
   sourceType: "url" | "upload";
@@ -74,7 +98,7 @@ export const ControlPlaneClient = {
   async createProject(payload: { name: string }) {
     return request("/projects", { method: "POST", body: payload });
   },
-  async submitRun(payload: IntakeSubmission): Promise<WorkflowRunSummary> {
+  async submitRun(payload: IntakeSubmission): Promise<WorkflowRunDetail> {
     return request("/workflow-runs", { method: "POST", body: payload });
   },
 };

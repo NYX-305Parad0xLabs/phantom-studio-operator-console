@@ -4,6 +4,7 @@ import { ControlPlaneClient } from "@/lib/api/controlPlane";
 import { ProviderGatewayClient } from "@/lib/api/providerGateway";
 import { buildSubmissionPayload, submitIntakeRun } from "@/lib/intake/service";
 import { IntakeFormValues } from "@/lib/intake/schema";
+import { RunStageStatus, runStageOrder } from "@/lib/runs/status";
 
 const sampleValues: IntakeFormValues = {
   sourceType: "url",
@@ -33,6 +34,13 @@ describe("intake service", () => {
     const projectSpy = vi
       .spyOn(ControlPlaneClient, "createProject")
       .mockResolvedValue({ id: "proj-1", name: "Original Creator" });
+    const stageRecords = runStageOrder.map((stage, index) => ({
+      stage,
+      status: (index === 0 ? "complete" : "pending") as RunStageStatus,
+      startedAt: new Date().toISOString(),
+      completedAt: index === 0 ? new Date().toISOString() : undefined,
+    }));
+
     const submitSpy = vi
       .spyOn(ControlPlaneClient, "submitRun")
       .mockResolvedValue({
@@ -41,6 +49,10 @@ describe("intake service", () => {
         status: "queued",
         stage: "ingest",
         clipCount: 2,
+        sourceType: "url",
+        platforms: ["tiktok"],
+        updatedAt: new Date().toISOString(),
+        stages: stageRecords,
       });
     const providerSpy = vi
       .spyOn(ProviderGatewayClient, "triggerIngest")

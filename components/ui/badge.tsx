@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 
 export type BadgeProps = {
-  variant?: "muted" | "accent" | "success";
+  variant?: "muted" | "accent" | "success" | "outline";
   children: React.ReactNode;
   className?: string;
 };
@@ -12,6 +12,7 @@ const variantStyles: Record<Required<BadgeProps>["variant"], string> = {
   muted: "bg-paradox-gray-700 text-white",
   accent: "bg-paradox-accent/80 text-white",
   success: "bg-paradox-emerald/80 text-black",
+  outline: "border border-paradox-gray-600 text-paradox-gray-300 bg-transparent",
 };
 
 export function Badge({ variant = "muted", children, className }: BadgeProps) {
