@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { ControlPlaneClient } from "@/lib/api/controlPlane";
-import { ProviderGatewayClient } from "@/lib/api/providerGateway";
 import { buildSubmissionPayload, submitIntakeRun } from "@/lib/intake/service";
 import { IntakeFormValues } from "@/lib/intake/schema";
 import { RunStageStatus, runStageOrder } from "@/lib/runs/status";
@@ -30,7 +29,7 @@ describe("intake service", () => {
     });
   });
 
-  it("submits to both control plane and provider gateway", async () => {
+  it("submits to the control plane intake", async () => {
     const projectSpy = vi
       .spyOn(ControlPlaneClient, "createProject")
       .mockResolvedValue({ id: "proj-1", name: "Original Creator" });
@@ -54,15 +53,10 @@ describe("intake service", () => {
         updatedAt: new Date().toISOString(),
         stages: stageRecords,
       });
-    const providerSpy = vi
-      .spyOn(ProviderGatewayClient, "triggerIngest")
-      .mockResolvedValue({ status: "queued", ingestId: "ingest-1" });
-
     const result = await submitIntakeRun(sampleValues);
     expect(result.id).toBe(1);
     expect(projectSpy).toHaveBeenCalled();
     expect(submitSpy).toHaveBeenCalled();
-    expect(providerSpy).toHaveBeenCalled();
   });
 
   it("propagates control-plane errors", async () => {

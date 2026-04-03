@@ -128,4 +128,75 @@ describe("ReviewPage", () => {
     expect(screen.getByText(/Automated QA pass/)).toBeInTheDocument();
     expect(screen.getByText(/Ready for publish scheduling/)).toBeInTheDocument();
   });
+
+  it("renders provider clip candidates when live mode is enabled", async () => {
+    vi.resetModules();
+    const actualConfig = await vi.importActual("@/lib/config");
+    vi.doMock("@/lib/config", () => ({
+      ...actualConfig,
+      providerGatewayBaseUrl: "https://provider.example",
+      integrationMode: "live",
+      defaultProviderAnalysisId: 99,
+      defaultProviderTranscriptId: 42,
+    }));
+
+    const mockAnalysis = {
+      analysis_id: 99,
+      transcript_id: 42,
+      overall_score: 9.1,
+      clip_count: 2,
+      clips: [
+        {
+          start_seconds: 1,
+          end_seconds: 5,
+          duration_seconds: 4,
+          score: 8.7,
+          rationale: "Live analysis rationale",
+          best_clip: true,
+        },
+      ],
+      signals: [{ signal_type: "hook_density", value: 3.0, description: "Live hook" }],
+      decision_text: "Choose the hero clip",
+    };
+    const mockTranscript = {
+      transcript_id: 42,
+      text: "Live transcript",
+      language: "en",
+      confidence: 0.95,
+      subtitle_srt_path: "/live.srt",
+      segments: [
+        {
+          start_seconds: 0,
+          end_seconds: 6,
+          text: "We just closed a live deal.",
+          confidence: 0.95,
+          words: [{ text: "We", start_seconds: 0, end_seconds: 0.5 }],
+        },
+      ],
+      cues: [
+        { cue_index: 1, start_seconds: 0, end_seconds: 5, text: "Live transcript" },
+      ],
+      summary: { overall_confidence: 0.95 },
+    };
+
+    vi.doMock("@/lib/api/providerGateway", () => ({
+      ProviderGatewayClient: {
+        fetchAnalysis: vi.fn().mockResolvedValue(mockAnalysis),
+        fetchTranscript: vi.fn().mockResolvedValue(mockTranscript),
+      },
+    }));
+
+    const { default: LiveReviewPage } = await import("@/app/review/page");
+    const { Providers: LiveProviders } = await import("@/app/providers");
+    render(
+      <LiveProviders>
+        <LiveReviewPage />
+      </LiveProviders>,
+    );
+
+    expect(await screen.findByText(/Provider live/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Live analysis rationale/i)).toBeInTheDocument();
+
+    vi.resetModules();
+  });
 });

@@ -22,3 +22,19 @@ export const defaultWorkflowRunId = Number(
 export const defaultPublishJobId = Number(
   process.env.NEXT_PUBLIC_DEFAULT_PUBLISH_JOB_ID ?? "0",
 );
+
+export const defaultProviderSourceId = Number(
+  process.env.NEXT_PUBLIC_PROVIDER_SOURCE_ID ?? "0",
+);
+
+export const defaultProviderJobId = Number(
+  process.env.NEXT_PUBLIC_PROVIDER_JOB_ID ?? "0",
+);
+
+export const defaultProviderTranscriptId = Number(
+  process.env.NEXT_PUBLIC_PROVIDER_TRANSCRIPT_ID ?? "0",
+);
+
+export const defaultProviderAnalysisId = Number(
+  process.env.NEXT_PUBLIC_PROVIDER_ANALYSIS_ID ?? "0",
+);

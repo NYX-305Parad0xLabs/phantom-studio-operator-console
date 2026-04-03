@@ -7,20 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ClipCard } from "@/components/review/ClipCard";
 import { CaptionReviewPanel } from "@/components/review/CaptionReviewPanel";
-import { mockClipCandidates } from "@/lib/review/clip";
+import { useProviderClips } from "@/lib/review/useProviderClips";
 import { DecisionPanel } from "@/components/review/DecisionPanel";
 import { RunHistoryPanel } from "@/components/review/RunHistoryPanel";
 
 type CompareMode = "single" | "compare";
 
 export default function ReviewPage() {
-  const [selectedId, setSelectedId] = useState(mockClipCandidates[0].id);
+  const { candidates, isLive } = useProviderClips();
+  const [selectedId, setSelectedId] = useState(() => candidates[0]?.id ?? "");
   const [compareMode, setCompareMode] = useState<CompareMode>("single");
   const [compareSet, setCompareSet] = useState<string[]>([]);
 
-  const selectedClip = mockClipCandidates.find(
-    (candidate) => candidate.id === selectedId,
-  );
+  const selectedClip =
+    candidates.find((candidate) => candidate.id === selectedId) ?? candidates[0];
 
   const toggleCompare = (id: string) => {
     setCompareSet((prev) => {
@@ -50,7 +50,7 @@ export default function ReviewPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-paradox-gray-500">
                 Candidates
@@ -59,7 +59,7 @@ export default function ReviewPage() {
                 Tap a card to preview, or toggle compare mode for up to 3.
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Button
                 type="button"
                 variant={compareMode === "single" ? "outline" : "ghost"}
@@ -75,9 +75,15 @@ export default function ReviewPage() {
                 Compare
               </Button>
             </div>
+            <Badge
+              variant={isLive ? "success" : "muted"}
+              className="text-[10px] uppercase tracking-[0.3em]"
+            >
+              {isLive ? "Provider live" : "Provider mock"}
+            </Badge>
           </div>
           <div className="space-y-4">
-            {mockClipCandidates.map((candidate) => {
+            {candidates.map((candidate) => {
               const selected = candidate.id === selectedId;
               return (
                 <div key={candidate.id}>
