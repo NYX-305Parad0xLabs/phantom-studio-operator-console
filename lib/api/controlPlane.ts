@@ -1,6 +1,7 @@
 import { controlPlaneBaseUrl, integrationMode, operatorAuthToken } from "@/lib/config";
 
 import { runStageOrder, RunStage, RunStageStatus } from "@/lib/runs/status";
+import { ProvenanceManifest } from "@/lib/provenance/types";
 
 export const mockRun = {
   id: 123,
@@ -157,7 +158,7 @@ export type DecisionSubmission = {
 
 export type ProvenanceDetail = {
   workflow_run_id: number;
-  manifest: Record<string, unknown>;
+  manifest: ProvenanceManifest;
   manifest_checksum: string;
   created_at: string;
 };
@@ -182,6 +183,14 @@ export type PublishJobDetail = {
   };
 };
 
+export type PublishExportBundleDetail = {
+  id: number;
+  workflow_run_id: number;
+  manifest_path: string;
+  checksum: string;
+  created_at: string;
+};
+
 export type PublishPreparePayload = {
   assetUri: string;
   platformSlug: string;
@@ -193,12 +202,101 @@ export type PublishSchedulePayload = {
   note?: string;
 };
 
+const mockManifest: ProvenanceManifest = {
+  run: {
+    id: mockRun.id,
+    project_id: 1,
+    character_profile_id: 1,
+    status: "completed",
+    stage: mockRun.stage,
+    review_status: "approved",
+    requested_at: new Date().toISOString(),
+    completed_at: new Date().toISOString(),
+    workflow_metadata: {
+      project_name: mockRun.project,
+      sourceType: mockRun.sourceType,
+      platforms: mockRun.platforms,
+      updatedAt: mockRun.updatedAt,
+    },
+  },
+  character: {
+    id: 1,
+    name: "Operator avatar",
+    disclosed: true,
+    persona: "Operator persona",
+  },
+  disclosure: {
+    label: "Original synthetic character disclosed 2026-04-03",
+    is_original: true,
+    protected_identity: false,
+  },
+  assets: [
+    {
+      id: 101,
+      asset_type: "render",
+      uri: "/mock/render.mp4",
+      provider: "provider-gateway",
+      kind: "video",
+      manifest: {
+        local_path: "exports/run-123/render.mp4.json",
+        checksum: "sha256:asset-render",
+        file_size: 1024,
+        metadata: { resolution: "1080x1920", fps: 24 },
+      },
+    },
+  ],
+  provider_traces: [
+    {
+      id: "trace-001",
+      stage: "render",
+      provider_name: "Flux Render",
+      provider_model: "flux-render-v1",
+      request_payload: { clip_id: 101 },
+      response_payload: { duration_seconds: 15 },
+      prompt_text: "Finalize the clip with bold captions and disclosure mention.",
+      prompt_spec: { style: "sendshort_like" },
+      source_asset_ids: [101],
+      generated_asset_id: 202,
+      operator_identity: "operator-alex",
+      created_at: new Date().toISOString(),
+    },
+  ],
+  reviews: [
+    {
+      id: 1,
+      decision: "approve",
+      status: "completed",
+      reviewer_role: "operator",
+      notes: "Render + captions approved",
+      artifact_scope: "render",
+      decided_at: new Date().toISOString(),
+    },
+  ],
+  audits: [
+    {
+      id: 1,
+      entity_type: "workflow",
+      entity_id: String(mockRun.id),
+      action: "export-ready",
+      actor: "operator-alex",
+      payload: { detail: "Export bundle generated" },
+      created_at: new Date().toISOString(),
+    },
+  ],
+};
+
 const mockProvenance: ProvenanceDetail = {
   workflow_run_id: mockRun.id,
-  manifest: {
-    note: "Mocked manifest until backend wiring completes",
-  },
+  manifest: mockManifest,
   manifest_checksum: "sha256:provenance-placeholder",
+  created_at: new Date().toISOString(),
+};
+
+const mockExportBundle: PublishExportBundleDetail = {
+  id: 1,
+  workflow_run_id: mockRun.id,
+  manifest_path: "exports/run-123/manifest.json",
+  checksum: "sha256:bundle-check",
   created_at: new Date().toISOString(),
 };
 
@@ -302,6 +400,22 @@ export const ControlPlaneClient = {
       }
     }
     return mockProvenance;
+  },
+
+  async fetchExportBundle(runId: number): Promise<PublishExportBundleDetail> {
+    if (runId <= 0) {
+      return mockExportBundle;
+    }
+    if (integrationMode === "live") {
+      try {
+        return await request<PublishExportBundleDetail>(`/workflow-runs/${runId}/export-bundle`, {
+          method: "POST",
+        });
+      } catch (error) {
+        console.warn("Control plane export bundle unavailable", error);
+      }
+    }
+    return mockExportBundle;
   },
 
   async fetchPublishJob(jobId: number): Promise<PublishJobDetail> {

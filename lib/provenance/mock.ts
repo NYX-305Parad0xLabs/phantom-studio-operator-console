@@ -1,143 +1,144 @@
-export type ProviderTrace = {
-  id: string;
-  stage: string;
-  provider: string;
-  model: string;
-  requestMeta: string;
-  responseMeta: string;
-  promptSummary: string;
-  sourceAssets: string[];
-  generatedAssets: string[];
-  timestamp: string;
-  operator: string;
-};
+import {
+  AuditEventRecord,
+  ProvenanceAssetEntry,
+  ProvenanceManifest,
+  ProviderTraceRecord,
+  ReviewRecord,
+} from "@/lib/provenance/types";
 
-export type PromptArtifact = {
-  id: string;
-  stage: string;
-  prompt: string;
-  tokens: number;
-  confidence: string;
-};
+const now = new Date().toISOString();
 
-export type AssetReference = {
-  id: string;
-  label: string;
-  path: string;
-  checksum: string;
-};
-
-export type AuditEvent = {
-  id: string;
-  type: string;
-  timestamp: string;
-  actor: string;
-  detail: string;
-};
-
-export type ExportManifest = {
-  id: string;
-  path: string;
-  checksum: string;
-  disclosure: string;
-  reviewTrail: string[];
-};
-
-export const mockProviderTraces: ProviderTrace[] = [
+export const mockProviderTraces: ProviderTraceRecord[] = [
   {
     id: "trace-001",
-    stage: "image_gen",
-    provider: "Flux",
-    model: "flux-v2.1",
-    requestMeta: "prompt template v4, 4 shots, disclosure tag included",
-    responseMeta: "5 assets returned, 1 selected",
-    promptSummary: "Original synth hero wearing neon gear",
-    sourceAssets: ["source-frame-001.mp4"],
-    generatedAssets: ["image-hero-004.png"],
-    timestamp: "2026-04-03T09:00:00Z",
-    operator: "operator-alex",
+    stage: "render",
+    provider_name: "Flux Render",
+    provider_model: "flux-render-v1",
+    request_payload: { clip_id: 101, style: "sendshort_like" },
+    response_payload: { duration_seconds: 15.1 },
+    prompt_text: "Render a bold hero clip with caption-first frames.",
+    prompt_spec: { accents: "bold", disclosure: "original synthetic" },
+    source_asset_ids: [1],
+    generated_asset_id: 101,
+    operator_identity: "operator-alex",
+    created_at: now,
   },
   {
     id: "trace-002",
     stage: "voice",
-    provider: "ElevenLike",
-    model: "studio-voice-latin",
-    requestMeta: "Script chunk with disclosure mention",
-    responseMeta: "1 WAV file, 24kHz stereo",
-    promptSummary: "Synthetic narration affirming disclosure",
-    sourceAssets: ["script-1234.txt"],
-    generatedAssets: ["voice-synth-001.wav"],
-    timestamp: "2026-04-03T09:05:00Z",
-    operator: "operator-sam",
+    provider_name: "ElevenLike",
+    provider_model: "studio-voice-latin",
+    request_payload: { script: "Keep synthetic disclosure intact" },
+    response_payload: { format: "wav", duration_seconds: 16 },
+    prompt_text: "Narrate with disclosure and energy.",
+    prompt_spec: { tone: "assertive" },
+    source_asset_ids: [2],
+    generated_asset_id: 102,
+    operator_identity: "operator-sam",
+    created_at: now,
   },
 ];
 
-export const mockPromptArtifacts: PromptArtifact[] = [
+export const mockAssetReferences: ProvenanceAssetEntry[] = [
   {
-    id: "prompt-001",
-    stage: "image_gen",
-    prompt: "Create bold synthetic hero, mention disclosure, focus on energy.",
-    tokens: 176,
-    confidence: "0.82",
+    id: 1,
+    asset_type: "ingest",
+    uri: "data/src/phase-one.mp4",
+    provider: "local.flow",
+    kind: "video",
+    manifest: {
+      local_path: "artifacts/run-123/asset-1.json",
+      checksum: "sha256:ingest-abc",
+      file_size: 42_000_000,
+      metadata: { duration_seconds: 35, resolution: "1920x1080" },
+    },
   },
   {
-    id: "prompt-002",
-    stage: "voice",
-    prompt: "Narrate: disclose synthetic creation and invite community.",
-    tokens: 89,
-    confidence: "0.91",
-  },
-];
-
-export const mockAssetReferences: AssetReference[] = [
-  {
-    id: "asset-src-001",
-    label: "Original footage",
-    path: "data/src/phase-one.mp4",
-    checksum: "sha256:abc123...",
-  },
-  {
-    id: "asset-generated-image",
-    label: "Selected hero image",
-    path: "data/derived/image-hero-004.png",
-    checksum: "sha256:def456...",
-  },
-  {
-    id: "asset-generated-voice",
-    label: "Synthetic voice WAV",
-    path: "data/derived/voice-synth-001.wav",
-    checksum: "sha256:ghi789...",
+    id: 101,
+    asset_type: "render",
+    uri: "data/renders/phase-one.mp4",
+    provider: "provider-gateway",
+    kind: "video",
+    manifest: {
+      local_path: "artifacts/run-123/asset-101.json",
+      checksum: "sha256:render-xyz",
+      file_size: 7_500_000,
+      metadata: { resolution: "1080x1920", duration_seconds: 15 },
+    },
   },
 ];
 
-export const mockAuditEvents: AuditEvent[] = [
+export const mockReviews: ReviewRecord[] = [
   {
-    id: "event-001",
-    type: "ingest",
-    timestamp: "2026-04-03T08:55:00Z",
+    id: 1,
+    decision: "approve",
+    status: "completed",
+    reviewer_role: "operator",
+    notes: "Caption + voice review approved.",
+    artifact_scope: "render",
+    decided_at: now,
+  },
+];
+
+export const mockAuditEvents: AuditEventRecord[] = [
+  {
+    id: 1,
+    entity_type: "workflow",
+    entity_id: "123",
+    action: "ingest",
     actor: "system",
-    detail: "Ingest job recorded, file hash logged.",
+    payload: { detail: "Ingest finished" },
+    created_at: now,
   },
   {
-    id: "event-002",
-    type: "review",
-    timestamp: "2026-04-03T09:15:00Z",
+    id: 2,
+    entity_type: "workflow",
+    entity_id: "123",
+    action: "review",
     actor: "operator-alex",
-    detail: "Caption + voice review approved.",
-  },
-  {
-    id: "event-003",
-    type: "publish",
-    timestamp: "2026-04-03T09:20:00Z",
-    actor: "operator-alex",
-    detail: "Export bundle flagged ready for scheduling.",
+    payload: { detail: "Review approved" },
+    created_at: now,
   },
 ];
 
-export const mockExportManifest: ExportManifest = {
+export const mockProvenanceManifest: ProvenanceManifest = {
+  run: {
+    id: 123,
+    project_id: 1,
+    character_profile_id: 1,
+    status: "completed",
+    stage: "publish_prepare",
+    review_status: "approved",
+    requested_at: now,
+    completed_at: now,
+    workflow_metadata: {
+      project_name: "project-mock-run",
+      sourceType: "url",
+      platforms: ["tiktok"],
+      updatedAt: now,
+    },
+  },
+  character: {
+    id: 10,
+    name: "Operator avatar",
+    disclosed: true,
+    persona: "Operator persona",
+  },
+  disclosure: {
+    label: "Original synthetic character disclosed 2026-04-03",
+    is_original: true,
+    protected_identity: false,
+  },
+  assets: mockAssetReferences,
+  provider_traces: mockProviderTraces,
+  reviews: mockReviews,
+  audits: mockAuditEvents,
+};
+
+export const mockExportManifest = {
   id: "bundle-001",
-  path: "exports/run-123/bundle.json",
-  checksum: "sha256:bundlecheckxyz",
-  disclosure: "Original synthetic character disclosed 2026-04-03",
-  reviewTrail: ["caption review approved", "voice review signed off", "approval decision logged"],
+  path: "exports/run-123/manifest.json",
+  checksum: "sha256:bundle-check",
+  disclosure: mockProvenanceManifest.disclosure.label,
+  reviewTrail: mockReviews.map((review) => review.notes ?? review.decision),
 };

@@ -5,7 +5,7 @@ import ExportsPage from "@/app/exports/page";
 import { Providers } from "@/app/providers";
 
 describe("ExportsPage", () => {
-  it("renders render summary and preset cards", () => {
+  it("renders render summary with layers and preset information", () => {
     render(
       <Providers>
         <ExportsPage />
@@ -15,23 +15,18 @@ describe("ExportsPage", () => {
     expect(screen.getByText("Render summary")).toBeInTheDocument();
     expect(screen.getByText(/Render layers/)).toBeInTheDocument();
     expect(screen.getByText("Export preset")).toBeInTheDocument();
+    expect(screen.getByText("Caption JSON")).toBeInTheDocument();
   });
 
-  it("shows readiness badges and captions info", () => {
+  it("shows publish readiness and manifest statuses", () => {
     render(
       <Providers>
         <ExportsPage />
       </Providers>,
     );
 
-    expect(screen.getAllByText(/Ready for human approval/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Blocked pending review/).length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText(/Blocked pending export issue/).length,
-    ).toBeGreaterThan(0);
-    expect(screen.getByText(/Phase One Viral Short/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Original synthetic character disclosed/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Publish readiness")).toBeInTheDocument();
+    expect(screen.getByText(/Ready for human approval/i)).toBeInTheDocument();
+    expect(screen.getByText(/Manifest recorded/i)).toBeInTheDocument();
   });
 });

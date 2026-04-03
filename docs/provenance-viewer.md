@@ -1,20 +1,17 @@
 # Provenance Viewer
 
-The provenance screen ties every synthetic artifact back to its provider, prompt, and audit trail so that operators and auditors can understand how a short-form asset was created and verified.
+The provenance viewer now talks directly to the control-plane `/workflow-runs/{runId}/provenance` endpoint and displays the real manifest that stitches together assets, provider traces, review decisions, and audit events for each run. When integration mode is live, operators see the same bundle that downstream Liquefy audits and publish adapters will reference.
 
-## Provider + prompt traces
+## Manifest section
 
-- Each provider trace card lists the model, operator, collection of source/generated assets, and request/response metadata.
-- Prompt artifacts include token counts and confidence scores so operators can justify why a specific instruction was used.
+- The top card surfaces the checksum and serialized manifest payload so auditors can confirm the bundle matches the stored export bundle. A `Live` badge flags when the data comes from the control plane and a fallback message explains when the UI is showing the sandbox placeholder.
 
-## Asset / audit spotlight
+## Provider traces
 
-- Source and generated assets show filesystem paths plus checksum values that will later map to control-plane manifests.
-- Audit events chronicle ingest, review, and publish flags so nothing is hidden.
+- Each trace entry shows the provider name, model, prompt text, request/response payloads, and the generated asset IDs so operators can follow how every artifact was produced.
+- Prompt artifacts, asset references, and audit events render from the manifest itself, keeping the UI aligned with the actual bundle instead of stale mock data.
 
-## Export bundle
+## Review trail + export bundle
 
-- The manifest viewer presents the bundle path, checksum, and disclosure metadata that will accompany the bundle handed to the control plane.
-- Review trail entries demonstrate which approvals have already been granted, aligning with the control-plane review decisions.
-
-No cryptographic claims are made—the UI simply surfaces the recorded checksums and disclosure strings already emitted by the backend.
+- The export bundle card now pulls the manifest review trail, so operators can confirm which reviews were included in the bundle and see the recorded disclosure statement.
+- When the control plane cannot reach the backend, the viewer surfaces clear `Mock` badges and explanatory messaging while still describing the expected data shape.
