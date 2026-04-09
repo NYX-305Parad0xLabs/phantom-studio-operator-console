@@ -76,3 +76,8 @@ Honest UI status rules:
 - `Mocked` when fallback data is being shown.
 - `Failed` when live calls fail and no fallback could satisfy the screen.
 - `Waiting for review` when factory run status is `human_review`.
+
+## Readiness classification
+
+- Current status: **demo-ready, dev-only**
+- Not yet pilot-ready or production-ready.
