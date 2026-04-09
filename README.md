@@ -43,3 +43,14 @@ To run the console in demo-ready live mode, copy .env.example to .env.local and 
 8. Confirm the settings page shows live badges for both backends before trusting the rest of the UI.
 
 Detailed per-screen status and fallback copies live in docs/demo-status.md.
+
+## Autonomous UGC factory additions
+- New page: `/factory` for end-to-end product->plan->multi-shot output execution.
+- Control-plane integration:
+  - `POST /workflow-runs/{run_id}/ugc-factory-plan`
+  - `GET /workflow-runs/{run_id}/ugc-factory-plan`
+- Provider-gateway integration:
+  - `POST /api/video/multi-shot`
+  - `GET /api/video/backends`
+- Includes makeup tutorial default payload with influencer lock continuity and backend switching.
+- See `docs/autonomous-ugc-factory.md`.

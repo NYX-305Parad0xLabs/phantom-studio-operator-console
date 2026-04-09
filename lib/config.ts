@@ -38,3 +38,26 @@ export const defaultProviderTranscriptId = Number(
 export const defaultProviderAnalysisId = Number(
   process.env.NEXT_PUBLIC_PROVIDER_ANALYSIS_ID ?? "0",
 );
+
+export const defaultProviderCaptionId = Number(
+  process.env.NEXT_PUBLIC_PROVIDER_CAPTION_ID ?? "0",
+);
+
+export const defaultProviderVoiceId = Number(
+  process.env.NEXT_PUBLIC_PROVIDER_VOICE_ID ?? "0",
+);
+
+export const defaultProviderLipsyncId = Number(
+  process.env.NEXT_PUBLIC_PROVIDER_LIPSYNC_ID ?? "0",
+);
+
+export const defaultProviderRenderId = Number(
+  process.env.NEXT_PUBLIC_PROVIDER_RENDER_ID ?? "0",
+);
+
+const rawProviderTranslationTargets =
+  process.env.NEXT_PUBLIC_PROVIDER_TRANSLATION_TARGETS ?? "es,fr";
+export const providerTranslationTargets = rawProviderTranslationTargets
+  .split(",")
+  .map((entry) => entry.trim())
+  .filter((entry) => entry.length > 0);

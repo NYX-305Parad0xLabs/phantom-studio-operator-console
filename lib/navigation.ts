@@ -31,6 +31,12 @@ export const navItems: NavItem[] = [
     icon: "pulse",
   },
   {
+    label: "Factory",
+    href: "/factory",
+    description: "Run autonomous product-to-UGC shot pipelines.",
+    icon: "sparkles",
+  },
+  {
     label: "Review",
     href: "/review",
     description: "Approve/reject assets and human QA decisions.",

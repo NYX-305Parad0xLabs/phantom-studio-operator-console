@@ -2,6 +2,15 @@
 
 import { providerGatewayBaseUrl, providerAuthToken, integrationMode } from "@/lib/config";
 import { mockClipCandidates } from "@/lib/review/clip";
+import { mockVoiceArtifact, mockLipsyncArtifact } from "@/lib/provider/mockVoice";
+import { mockRenderSummary } from "@/lib/export/mockRender";
+import type {
+  LipSyncArtifactRead,
+  VoiceArtifactRead,
+} from "@/lib/provider/types";
+
+export type { LipSyncArtifactRead, VoiceArtifactRead } from "@/lib/provider/types";
+import { mockCaptionArtifact, type CaptionCue } from "@/lib/review/caption";
 
 const shouldUseLiveProvider = Boolean(providerGatewayBaseUrl && integrationMode === "live");
 
@@ -150,6 +159,203 @@ export type ClipArtifactRead = {
   style_notes: string | null;
 };
 
+export type CaptionEmphasisMarkerRead = {
+  marker_type: string;
+  value: string;
+  detail: string | null;
+};
+
+export type CaptionCueRead = {
+  cue_index: number;
+  start_seconds: number;
+  end_seconds: number;
+  text: string;
+  transcript_segment_id: number | null;
+  transcript_reference: string;
+  emoji_suggestions: string[];
+  punch_words: string[];
+  zoom_suggestion: string | null;
+  b_roll_suggestion: string | null;
+  emphasis_markers: CaptionEmphasisMarkerRead[];
+};
+
+export type CaptionStyleSpecRead = {
+  name: string;
+  description: string | null;
+  text_color: string;
+  background_color: string;
+  accent_color: string;
+  font_weight: string;
+  emphasis_style: string;
+  visibility_window_seconds: number;
+};
+
+export type CaptionPlanRead = {
+  caption_id: number;
+  clip_id: number;
+  style: CaptionStyleSpecRead;
+  cue_count: number;
+  caption_json_path: string;
+  srt_like_path: string | null;
+  cues: CaptionCueRead[];
+  platform_hint: string | null;
+  context_note: string | null;
+};
+
+export type TranslationCueRead = {
+  cue_index: number;
+  start_seconds: number;
+  end_seconds: number;
+  translated_text: string;
+  transcript_reference: string;
+};
+
+export type TranslationQualityNoteRead = {
+  category: string;
+  detail: string;
+  confidence_score: number | null;
+};
+
+export type TranslationDetailRead = {
+  translation_id: number;
+  caption_plan_id: number;
+  target_language_code: string;
+  target_label: string | null;
+  translation_json_path: string;
+  subtitle_path: string | null;
+  cue_count: number;
+  cues: TranslationCueRead[];
+  quality_notes: TranslationQualityNoteRead[];
+};
+
+export type TranslationBatchRead = {
+  caption_id: number;
+  translations: TranslationDetailRead[];
+};
+
+export type PlatformExportSpecRead = {
+  id: number;
+  name: string;
+  target_platform: string;
+  orientation: string;
+  resolution: string;
+  aspect_ratio: string | null;
+  metadata_json: Record<string, unknown> | null;
+  created_at: string;
+};
+
+export type RenderLayerRead = {
+  layer_type: string;
+  metadata_json: Record<string, unknown> | null;
+  created_at: string;
+};
+
+export type RenderPlanRead = {
+  id: number;
+  clip_id: number;
+  caption_plan_id: number;
+  translation_ids: number[] | null;
+  voice_artifact_id: number | null;
+  lipsync_result_id: number | null;
+  metadata_json: Record<string, unknown> | null;
+  created_at: string;
+};
+
+export type RenderOutputRead = {
+  id: number;
+  render_plan_id: number;
+  video_uri: string;
+  caption_text_path: string;
+  caption_json_path: string;
+  duration_seconds: number;
+  spec_id: number | null;
+  metadata_json: Record<string, unknown> | null;
+  created_at: string;
+  spec: PlatformExportSpecRead | null;
+};
+
+export type PublishReadyPayloadRead = {
+  id: number;
+  render_output_id: number;
+  title: string;
+  caption: string;
+  hashtags: string[] | null;
+  rationale: string | null;
+  spec_id: number;
+  metadata_json: Record<string, unknown> | null;
+  created_at: string;
+};
+
+export type RenderSummaryRead = {
+  plan: RenderPlanRead;
+  layers: RenderLayerRead[];
+  output: RenderOutputRead;
+  spec: PlatformExportSpecRead | null;
+  publish_ready: PublishReadyPayloadRead | null;
+};
+
+export type MultiShotSceneRequest = {
+  shot_id: string;
+  duration_seconds: number;
+  prompt: string;
+  start_frame_reference?: string | null;
+  end_frame_reference?: string | null;
+};
+
+export type MultiShotVideoRequest = {
+  workflowRunId: number;
+  influencerLockId: string;
+  productName: string;
+  videoBackend: string;
+  targetPlatforms: string[];
+  referenceImageUrl?: string;
+  scenes: MultiShotSceneRequest[];
+};
+
+export type MultiShotSceneResult = {
+  shot_id: string;
+  video_uri: string;
+  duration_seconds: number;
+  backend: string;
+  request_payload: Record<string, unknown>;
+};
+
+export type MultiShotVideoResponse = {
+  workflow_run_id: number;
+  influencer_lock_id: string;
+  product_name: string;
+  backend: string;
+  stitched_video_uri: string;
+  metadata_uri?: string | null;
+  video_uri: string;
+  total_duration_seconds: number;
+  disclosure_text?: string;
+  provenance?: Record<string, unknown>;
+  scenes: MultiShotSceneResult[];
+};
+
+export type MultiShotJobCreateResponse = {
+  job_id: string;
+  status: "queued" | "running" | "completed" | "failed";
+  message: string;
+};
+
+export type MultiShotJobStatusResponse = {
+  job_id: string;
+  status: "queued" | "running" | "completed" | "failed";
+  message: string;
+  progress_percent: number;
+  current_scene?: number | null;
+  total_scenes?: number | null;
+  result?: MultiShotVideoResponse | null;
+  error?: string | null;
+};
+
+export type ReferenceImageUploadResponse = {
+  reference_image_url: string;
+  filename: string;
+};
+
 const mockSource: MediaSourceRead = {
   id: 1,
   source_type: "url",
@@ -232,6 +438,118 @@ const mockClipArtifact: ClipArtifactRead = {
   style_notes: "Mock style notes",
 };
 
+const mockCaptionCueReads: CaptionCueRead[] = mockCaptionArtifact.cues.map(
+  (cue: CaptionCue, index: number) => ({
+    cue_index: index + 1,
+    start_seconds: cue.startSeconds,
+    end_seconds: cue.endSeconds,
+    text: cue.text,
+    transcript_segment_id: null,
+    transcript_reference: `segment-${index + 1}`,
+    emoji_suggestions: cue.emojiSuggestions,
+    punch_words: cue.emphasisWords,
+    zoom_suggestion: null,
+    b_roll_suggestion: null,
+    emphasis_markers: [],
+  }),
+);
+
+const mockCaptionStyle: CaptionStyleSpecRead = {
+  name: mockCaptionArtifact.stylePreset.name,
+  description: mockCaptionArtifact.stylePreset.description,
+  text_color: "#FFFFFF",
+  background_color: "#000000",
+  accent_color: "#FFD700",
+  font_weight: "bold",
+  emphasis_style: "underline",
+  visibility_window_seconds: 2.5,
+};
+
+const mockCaptionPlan: CaptionPlanRead = {
+  caption_id: 1,
+  clip_id: mockClipArtifact.clip_id,
+  style: mockCaptionStyle,
+  cue_count: mockCaptionCueReads.length,
+  caption_json_path: "/mock/caption-plan.json",
+  srt_like_path: "/mock/caption-plan.srt",
+  cues: mockCaptionCueReads,
+  platform_hint: mockClipArtifact.platform_hint,
+  context_note: "Mock caption plan generated for review",
+};
+
+const mockTranslationBatch: TranslationBatchRead = {
+  caption_id: mockCaptionPlan.caption_id,
+  translations: [
+    {
+      translation_id: 11,
+      caption_plan_id: mockCaptionPlan.caption_id,
+      target_language_code: "es-ES",
+      target_label: "Spanish",
+      translation_json_path: "/mock/translation-spanish.json",
+      subtitle_path: "/mock/translation-spanish.srt",
+      cue_count: mockCaptionPlan.cue_count,
+      cues: mockCaptionCueReads.map((cue) => ({
+        cue_index: cue.cue_index,
+        start_seconds: cue.start_seconds,
+        end_seconds: cue.end_seconds,
+        translated_text: `Live Spanish cue ${cue.cue_index}`,
+        transcript_reference: cue.transcript_reference,
+      })),
+      quality_notes: [
+        {
+          category: "placeholder",
+          detail: "Sentence structures shortened for scrolling attention.",
+          confidence_score: 0.7,
+        },
+      ],
+    },
+    {
+      translation_id: 12,
+      caption_plan_id: mockCaptionPlan.caption_id,
+      target_language_code: "fr-FR",
+      target_label: "French",
+      translation_json_path: "/mock/translation-french.json",
+      subtitle_path: "/mock/translation-french.srt",
+      cue_count: mockCaptionPlan.cue_count,
+      cues: mockCaptionCueReads.map((cue) => ({
+        cue_index: cue.cue_index,
+        start_seconds: cue.start_seconds,
+        end_seconds: cue.end_seconds,
+        translated_text: `Live French cue ${cue.cue_index}`,
+        transcript_reference: cue.transcript_reference,
+      })),
+      quality_notes: [
+        {
+          category: "placeholder",
+          detail: "Tone stays bold with simplified adjectives.",
+          confidence_score: 0.65,
+        },
+      ],
+    },
+  ],
+};
+
+const mockMultiShotResponse: MultiShotVideoResponse = {
+  workflow_run_id: 1,
+  influencer_lock_id: "influencer-lock-mock",
+  product_name: "Mock Product",
+  backend: "kling",
+  stitched_video_uri: "file://renders/run-1/mock-product-kling-stitched.mp4",
+  metadata_uri: "file://renders/run-1/mock-product-kling-stitched.json",
+  video_uri: "file://renders/run-1/mock-product-kling-stitched.mp4",
+  total_duration_seconds: 22,
+  disclosure_text: "This is AI-generated synthetic content.",
+  scenes: [
+    {
+      shot_id: "shot-1-hook",
+      video_uri: "https://kling.mock/run/1/lock/influencer-lock-mock/mock-product/shot-1-hook.mp4",
+      duration_seconds: 5,
+      backend: "kling",
+      request_payload: { prompt: "Mock hook scene" },
+    },
+  ],
+};
+
 function liveOrMock<T>(live: () => Promise<T>, fallback: T): Promise<T> {
   if (!shouldUseLiveProvider) {
     return Promise.resolve(fallback);
@@ -240,6 +558,28 @@ function liveOrMock<T>(live: () => Promise<T>, fallback: T): Promise<T> {
 }
 
 export const ProviderGatewayClient = {
+  async uploadReferenceImage(file: File): Promise<ReferenceImageUploadResponse> {
+    if (!shouldUseLiveProvider) {
+      return {
+        reference_image_url: "https://example.com/mock-reference.png",
+        filename: file.name,
+      };
+    }
+    const form = new FormData();
+    form.append("file", file);
+    const response = await fetch(`${providerGatewayBaseUrl}/api/video/reference-image`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${providerAuthToken}`,
+      },
+      body: form,
+    });
+    if (!response.ok) {
+      throw new Error("Reference image upload failed");
+    }
+    return response.json() as Promise<ReferenceImageUploadResponse>;
+  },
+
   async createSource(payload: MediaSourceCreatePayload): Promise<MediaSourceRead> {
     return liveOrMock(
       () =>
@@ -400,4 +740,153 @@ export const ProviderGatewayClient = {
       mockClipArtifact,
     );
   },
+
+  async fetchCaptionPlan(captionId: number): Promise<CaptionPlanRead> {
+    if (!captionId) {
+      return Promise.resolve(mockCaptionPlan);
+    }
+    return liveOrMock(
+      () => request<CaptionPlanRead>(`/api/captions/${captionId}`),
+      mockCaptionPlan,
+    );
+  },
+
+  async requestTranslationBatch(
+    captionId: number,
+    payload: { targetLanguages?: string[]; includeSrt?: boolean; contextNote?: string },
+  ): Promise<TranslationBatchRead> {
+    if (!captionId) {
+      return Promise.resolve(mockTranslationBatch);
+    }
+    return liveOrMock(
+      () =>
+        request<TranslationBatchRead>(`/api/jobs/translate/${captionId}`, {
+          method: "POST",
+          body: JSON.stringify({
+            target_languages: payload.targetLanguages,
+            include_srt: payload.includeSrt ?? true,
+            context_note: payload.contextNote,
+          }),
+        }),
+      mockTranslationBatch,
+    );
+  },
+
+  async fetchTranslation(translationId: number): Promise<TranslationDetailRead> {
+    return liveOrMock(
+      () => request<TranslationDetailRead>(`/api/translations/${translationId}`),
+      mockTranslationBatch.translations[0],
+    );
+  },
+
+  async fetchVoiceArtifact(voiceId: number): Promise<VoiceArtifactRead> {
+    if (!voiceId) {
+      return Promise.resolve(mockVoiceArtifact);
+    }
+    return liveOrMock(
+      () => request<VoiceArtifactRead>(`/api/voices/${voiceId}`),
+      mockVoiceArtifact,
+    );
+  },
+
+  async fetchLipSyncArtifact(lipsyncId: number): Promise<LipSyncArtifactRead> {
+    if (!lipsyncId) {
+      return Promise.resolve(mockLipsyncArtifact);
+    }
+    return liveOrMock(
+      () => request<LipSyncArtifactRead>(`/api/lipsync/${lipsyncId}`),
+      mockLipsyncArtifact,
+    );
+  },
+
+  async fetchRenderSummary(renderId: number): Promise<RenderSummaryRead> {
+    if (!renderId) {
+      return Promise.resolve(mockRenderSummary);
+    }
+    return liveOrMock(
+      () => request<RenderSummaryRead>(`/api/renders/${renderId}`),
+      mockRenderSummary,
+    );
+  },
+
+  async generateMultiShotVideo(payload: MultiShotVideoRequest): Promise<MultiShotVideoResponse> {
+    return liveOrMock(
+      () =>
+        request<MultiShotVideoResponse>("/api/video/multi-shot", {
+          method: "POST",
+          body: JSON.stringify({
+            workflowRunId: payload.workflowRunId,
+            influencerLockId: payload.influencerLockId,
+            productName: payload.productName,
+            videoBackend: payload.videoBackend,
+            targetPlatforms: payload.targetPlatforms,
+            referenceImageUrl: payload.referenceImageUrl,
+            scenes: payload.scenes,
+          }),
+        }),
+      {
+        ...mockMultiShotResponse,
+        workflow_run_id: payload.workflowRunId,
+        influencer_lock_id: payload.influencerLockId,
+        product_name: payload.productName,
+        backend: payload.videoBackend,
+        video_uri: `https://${payload.videoBackend}.mock/run/${payload.workflowRunId}/stitched.mp4`,
+        stitched_video_uri: `https://${payload.videoBackend}.mock/run/${payload.workflowRunId}/stitched.mp4`,
+        metadata_uri: `https://${payload.videoBackend}.mock/run/${payload.workflowRunId}/stitched.json`,
+        scenes: payload.scenes.map((scene) => ({
+          shot_id: scene.shot_id,
+          video_uri: `https://${payload.videoBackend}.mock/run/${payload.workflowRunId}/${scene.shot_id}.mp4`,
+          duration_seconds: scene.duration_seconds,
+          backend: payload.videoBackend,
+          request_payload: {
+            prompt: scene.prompt,
+            start_frame_reference: scene.start_frame_reference ?? null,
+            end_frame_reference: scene.end_frame_reference ?? null,
+          },
+        })),
+      },
+    );
+  },
+
+  async createMultiShotJob(payload: MultiShotVideoRequest): Promise<MultiShotJobCreateResponse> {
+    if (!shouldUseLiveProvider) {
+      return { job_id: `mock-job-${Date.now()}`, status: "queued", message: "Queued..." };
+    }
+    return request<MultiShotJobCreateResponse>("/api/video/multi-shot/jobs", {
+      method: "POST",
+      body: JSON.stringify({
+        workflowRunId: payload.workflowRunId,
+        influencerLockId: payload.influencerLockId,
+        productName: payload.productName,
+        videoBackend: payload.videoBackend,
+        targetPlatforms: payload.targetPlatforms,
+        referenceImageUrl: payload.referenceImageUrl,
+        scenes: payload.scenes,
+      }),
+    });
+  },
+
+  async getMultiShotJob(jobId: string): Promise<MultiShotJobStatusResponse> {
+    if (!shouldUseLiveProvider) {
+      return {
+        job_id: jobId,
+        status: "completed",
+        message: "Completed",
+        progress_percent: 100,
+        current_scene: 4,
+        total_scenes: 4,
+        result: {
+          ...mockMultiShotResponse,
+          stitched_video_uri: `https://mock.local/${jobId}.mp4`,
+          metadata_uri: `https://mock.local/${jobId}.json`,
+        },
+      };
+    }
+    return request<MultiShotJobStatusResponse>(`/api/video/multi-shot/jobs/${jobId}`);
+  },
+};
+
+export const providerGateway = {
+  generateMultiShot: (payload: MultiShotVideoRequest) =>
+    ProviderGatewayClient.generateMultiShotVideo(payload),
 };

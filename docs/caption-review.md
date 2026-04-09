@@ -2,6 +2,10 @@
 
 The caption review surface mirrors the control-plane’s insistence on transparency: operators see the exact timed cues, emphasis markers, emoji hints, and disclosure-aware messaging before approving any publishable asset.
 
+## Live vs. mock indicator
+
+- A pair of badges in the header show whether the capture is reading from the provider gateway (Live captions/Live translations) or falling back to the local mock dataset. That indicator is tied to `NEXT_PUBLIC_INTEGRATION_MODE` and a configured `NEXT_PUBLIC_PROVIDER_CAPTION_ID` so operators never mistake placeholder cues for live data.
+
 ## Timed cue list
 
 - Every cue exposes start/end timestamps, the captured text, emphasis words that guide bold styling, and emoji suggestions for rendering attention.

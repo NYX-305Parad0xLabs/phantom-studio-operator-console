@@ -7,6 +7,8 @@ const keys = {
   jobId: "ps_provider_job_id",
   transcriptId: "ps_provider_transcript_id",
   analysisId: "ps_provider_analysis_id",
+  voiceId: "ps_provider_voice_id",
+  lipsyncId: "ps_provider_lipsync_id",
 };
 
 function getNumber(key: string): number | null {
@@ -62,6 +64,22 @@ export function setProviderAnalysisId(value: number) {
 
 export function getProviderAnalysisId(): number | null {
   return getNumber(keys.analysisId);
+}
+
+export function setProviderVoiceId(value: number) {
+  setNumber(keys.voiceId, value);
+}
+
+export function getProviderVoiceId(): number | null {
+  return getNumber(keys.voiceId);
+}
+
+export function setProviderLipsyncId(value: number) {
+  setNumber(keys.lipsyncId, value);
+}
+
+export function getProviderLipsyncId(): number | null {
+  return getNumber(keys.lipsyncId);
 }
 
 export function usesLiveProviderFlow() {

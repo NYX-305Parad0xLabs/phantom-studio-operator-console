@@ -202,6 +202,74 @@ export type PublishSchedulePayload = {
   note?: string;
 };
 
+export type FactoryPlanRequest = {
+  productName: string;
+  finishGoal: string;
+  influencerLockId: string;
+  targetPlatforms: string[];
+  targetDurationSeconds: number;
+  visualStyle: string;
+  startFrameReference?: string;
+  endFrameReference?: string;
+  callToAction?: string;
+  videoBackend?: string;
+};
+
+export type FactoryScene = {
+  shot_id: string;
+  duration_seconds: number;
+  start_frame_reference?: string | null;
+  end_frame_reference?: string | null;
+  prompt: string;
+};
+
+export type FactoryPlanResponse = {
+  workflow_run_id: number;
+  product_name: string;
+  influencer_lock_id: string;
+  script: string;
+  scenes: FactoryScene[];
+  selected_video_backend: string;
+  nulla_agent_tasks: {
+    agent: string;
+    goal: string;
+    inputs: Record<string, unknown>;
+  }[];
+  editing_plan: string[];
+  next_provider_call: {
+    method: string;
+    url: string;
+    payload: Record<string, unknown>;
+  };
+  total_duration_seconds: number;
+  virality_score?: number | null;
+  synthetic_trace?: Record<string, unknown>;
+};
+
+export type UGCPostTaskRequest = {
+  stitchedVideoUri: string;
+  metadataUri?: string;
+  targetPlatforms: string[];
+  provenance?: Record<string, unknown>;
+};
+
+export type UGCPostTaskResponse = {
+  workflow_run_id: number;
+  status: string;
+  provider: string;
+  task_id: string;
+  message: string;
+  payload: Record<string, unknown>;
+};
+
+export type WorkflowRunCreateRaw = {
+  id: number;
+  project_id: number;
+  character_profile_id: number;
+  status: string;
+  stage: string;
+};
+
 const mockManifest: ProvenanceManifest = {
   run: {
     id: mockRun.id,
@@ -362,6 +430,23 @@ export const ControlPlaneClient = {
     return loadRunDetail(runId);
   },
 
+  async createFactoryRun(projectName: string): Promise<number> {
+    const created = await request<WorkflowRunCreateRaw>("/workflow-runs", {
+      method: "POST",
+      body: {
+        projectName,
+        sourceType: "url",
+        sourceReference: "local://factory-input",
+        clipMode: "single_best",
+        targetPlatforms: ["tiktok"],
+        targetLanguages: ["en"],
+        styleNotes: "autonomous-ugc-factory",
+        syntheticDisclosure: "Synthetic character disclosure required.",
+      },
+    });
+    return created.id;
+  },
+
   async createProject(payload: { name: string }) {
     return request("/projects", { method: "POST", body: payload });
   },
@@ -455,6 +540,29 @@ export const ControlPlaneClient = {
       method: "POST",
     });
   },
+
+  async createFactoryPlan(runId: number, payload: FactoryPlanRequest): Promise<FactoryPlanResponse> {
+    return request<FactoryPlanResponse>(`/workflow-runs/${runId}/ugc-factory-plan`, {
+      method: "POST",
+      body: payload,
+    });
+  },
+
+  async fetchFactoryPlan(runId: number): Promise<FactoryPlanResponse> {
+    return request<FactoryPlanResponse>(`/workflow-runs/${runId}/ugc-factory-plan`);
+  },
+
+  async postFactoryOutput(runId: number, payload: UGCPostTaskRequest): Promise<UGCPostTaskResponse> {
+    return request<UGCPostTaskResponse>(`/workflow-runs/${runId}/ugc-factory/post-to-social`, {
+      method: "POST",
+      body: payload,
+    });
+  },
+};
+
+export const controlPlane = {
+  createUGCPlan: (runId: number, payload: FactoryPlanRequest) =>
+    ControlPlaneClient.createFactoryPlan(runId, payload),
 };
 
 const mockRunDetail: WorkflowRunResponseRaw = {

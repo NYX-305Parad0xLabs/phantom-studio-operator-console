@@ -10,6 +10,7 @@ import { CaptionReviewPanel } from "@/components/review/CaptionReviewPanel";
 import { useProviderClips } from "@/lib/review/useProviderClips";
 import { DecisionPanel } from "@/components/review/DecisionPanel";
 import { RunHistoryPanel } from "@/components/review/RunHistoryPanel";
+import { VoiceLipsyncPanel } from "@/components/review/VoiceLipsyncPanel";
 
 type CompareMode = "single" | "compare";
 
@@ -176,6 +177,10 @@ export default function ReviewPage() {
           </p>
         </div>
         <CaptionReviewPanel />
+      </section>
+
+      <section className="space-y-4">
+        <VoiceLipsyncPanel />
       </section>
 
       <section className="space-y-4 lg:grid lg:grid-cols-[1.1fr_0.9fr] lg:gap-6">

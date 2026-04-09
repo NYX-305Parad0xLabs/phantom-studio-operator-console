@@ -9,3 +9,7 @@
 - `/publish` - Schedule publish-ready payloads through the control plane (manual trigger only).
 - `/provenance` - Trace provider logs, prompt artifacts, and audit events for compliance.
 - `/settings` - Configure base URLs, tokens, and diagnostics for both backends.
+
+## Demo status summary
+
+Refer to docs/demo-status.md for a live vs. mock breakdown, the per-screen classification, and the environment settings required before a demo.

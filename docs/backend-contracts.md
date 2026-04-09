@@ -16,6 +16,8 @@ The operator console speaks to the control plane and provider gateway via the ty
 
 - **Live endpoints** (enabled when `NEXT_PUBLIC_INTEGRATION_MODE=live` and the provider URL/token are configured):
   - `/api/sources`, `/api/jobs/ingest`, `/api/jobs/transcribe/{sourceId}`, `/api/jobs/analyze/{transcriptId}`, `/api/analyses/{analysisId}`, and `/api/clips/{clipId}` feed the intake, ingest pipeline, and clip review surfaces with real assets, transcripts, analysis signals, and rationale.
+  - `/api/captions/{captionId}` plus `/api/jobs/translate/{captionId}` (and the auxiliary `GET /api/translations/{translationId}` route) deliver the caption plan, cues, and translation detail that power the caption review and localized diff panels.
+  - `/api/voices/{voiceId}` and `/api/lipsync/{artifactId}` surface the voice audio plus lip-sync video artifacts (including provenance and disclosure metadata) so the review UI can show the approved synthetic creator outputs.
 
 - **Stubbed endpoints** (remain mocked until additional backend contracts are wired):
   - Caption generation, translation batches, voice tracks, lip-sync renders, edit/render/export orchestration, and publish scheduling still draw from the stub modules under `lib/export`, `lib/provenance`, and `lib/publish`.
