@@ -10,12 +10,13 @@
 - `npm run typecheck` -> pass
 - `npm test` -> pass
 - `npm run build` -> pass
+- `npx playwright test` -> pass (chromium smoke)
 
 ## Readiness
 - Classification: **demo-ready, dev-only**
 
 ## Known blockers
 - Several write flows remain intentionally mocked/simulated for safety until backend contracts are fully validated.
-- Browser e2e (Playwright) requires local browser install in CI/runtime.
+- Browser e2e (Playwright) requires local browser install in CI/runtime (installed and verified in this pass).
 - No auto-publish behavior (intentional safety boundary).
 - Live/mock mode labeling now covers planner fallback, provider stub mode, and diagnostics panel, but full pilot-readiness still depends on stable control-plane/provider production infrastructure.
