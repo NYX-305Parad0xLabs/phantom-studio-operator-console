@@ -62,3 +62,17 @@ Detailed per-screen status and fallback copies live in docs/demo-status.md.
 - UI state is explicitly labeled `Live`, `Mocked`, `Failed`, or `Waiting for review`.
 - No auto-publish behavior in factory flow; publish remains blocked until review approval.
 - See `docs/ugc-factory-console.md`.
+
+## Cross-repo local stack
+
+Run the full stack via the integration compose in the control-plane repo:
+- `phantom-studio-control-plane/docker-compose.integration.yml`
+- `phantom-studio-control-plane/.env.integration.example`
+
+Then open `http://localhost:3000/factory`.
+
+Honest UI status rules:
+- `Live` when control-plane/provider requests succeed.
+- `Mocked` when fallback data is being shown.
+- `Failed` when live calls fail and no fallback could satisfy the screen.
+- `Waiting for review` when factory run status is `human_review`.

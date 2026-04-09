@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { FactoryDisclosureBanner } from "@/components/factory/FactoryDisclosureBanner";
 import { FactoryStateBadge } from "@/components/factory/FactoryStateBadge";
@@ -34,7 +34,7 @@ function statusPercent(status: string) {
   }
 }
 
-export default function FactoryRunPage() {
+function FactoryRunContent() {
   const params = useSearchParams();
   const runId = Number(params.get("runId") ?? "0");
   const initialState = (params.get("state") as FactoryUiStateLabel) ?? "mocked";
@@ -124,5 +124,13 @@ export default function FactoryRunPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function FactoryRunPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-5xl px-4 py-8 text-paradox-gray-300">Loading run view...</div>}>
+      <FactoryRunContent />
+    </Suspense>
   );
 }

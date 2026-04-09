@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import { FactoryDisclosureBanner } from "@/components/factory/FactoryDisclosureBanner";
 import { FactoryStateBadge } from "@/components/factory/FactoryStateBadge";
@@ -14,7 +14,7 @@ import {
   type FactoryUiStateLabel,
 } from "@/lib/api/controlPlane";
 
-export default function FactoryReviewPage() {
+function FactoryReviewContent() {
   const params = useSearchParams();
   const runId = Number(params.get("runId") ?? "0");
   const [state, setState] = useState<FactoryUiStateLabel>(
@@ -107,5 +107,13 @@ export default function FactoryReviewPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function FactoryReviewPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-5xl px-4 py-8 text-paradox-gray-300">Loading review view...</div>}>
+      <FactoryReviewContent />
+    </Suspense>
   );
 }

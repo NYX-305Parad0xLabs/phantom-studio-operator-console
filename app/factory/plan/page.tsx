@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import { FactoryDisclosureBanner } from "@/components/factory/FactoryDisclosureBanner";
 import { FactoryStateBadge } from "@/components/factory/FactoryStateBadge";
@@ -14,7 +14,7 @@ import {
   type FactoryUiStateLabel,
 } from "@/lib/api/controlPlane";
 
-export default function FactoryPlanPage() {
+function FactoryPlanContent() {
   const params = useSearchParams();
   const planId = Number(params.get("planId") ?? "0");
   const [plan, setPlan] = useState<FactoryPlanRecord | null>(null);
@@ -99,5 +99,13 @@ export default function FactoryPlanPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function FactoryPlanPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-5xl px-4 py-8 text-paradox-gray-300">Loading plan view...</div>}>
+      <FactoryPlanContent />
+    </Suspense>
   );
 }

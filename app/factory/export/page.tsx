@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import { FactoryDisclosureBanner } from "@/components/factory/FactoryDisclosureBanner";
 import { FactoryStateBadge } from "@/components/factory/FactoryStateBadge";
@@ -15,7 +15,7 @@ import {
   type PublishExportBundleDetail,
 } from "@/lib/api/controlPlane";
 
-export default function FactoryExportPage() {
+function FactoryExportContent() {
   const params = useSearchParams();
   const runId = Number(params.get("runId") ?? "0");
   const [state, setState] = useState<FactoryUiStateLabel>(
@@ -98,5 +98,13 @@ export default function FactoryExportPage() {
         <p className="text-sm text-paradox-gray-300">Checksum: {bundle?.checksum ?? "n/a"}</p>
       </Card>
     </div>
+  );
+}
+
+export default function FactoryExportPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-5xl px-4 py-8 text-paradox-gray-300">Loading export view...</div>}>
+      <FactoryExportContent />
+    </Suspense>
   );
 }
