@@ -13,12 +13,20 @@ export default function FactoryLandingPage() {
         <p className="text-sm text-paradox-gray-300">
           Start with intake to create a factory plan with safety assertions.
         </p>
-        <Link
-          href="/factory/intake"
-          className="inline-flex items-center rounded-xl bg-paradox-accent px-4 py-2 font-semibold text-black"
-        >
-          Open intake
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/factory/intake"
+            className="inline-flex items-center rounded-xl bg-paradox-accent px-4 py-2 font-semibold text-black"
+          >
+            Open intake
+          </Link>
+          <Link
+            href="/factory/run"
+            className="inline-flex items-center rounded-xl border border-paradox-gray-700 px-4 py-2 text-sm text-paradox-gray-200"
+          >
+            Open run diagnostics
+          </Link>
+        </div>
       </Card>
     </div>
   );

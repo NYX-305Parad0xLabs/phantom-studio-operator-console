@@ -70,6 +70,14 @@ function FactoryPlanContent() {
             <p className="text-sm text-paradox-gray-300">Platform: {plan.target_platform}</p>
             <p className="text-sm text-paradox-gray-300">Lock: {plan.influencer_lock_id}</p>
             <p className="text-sm text-paradox-gray-300">
+              Planner mode: {String(plan.product_input.planner_mode ?? "unknown")}
+            </p>
+            {plan.product_input.planner_fallback_reason ? (
+              <p className="text-xs text-amber-200">
+                Planner fallback: {String(plan.product_input.planner_fallback_reason)}
+              </p>
+            ) : null}
+            <p className="text-sm text-paradox-gray-300">
               Disclosure: {plan.disclosure_text}
             </p>
           </Card>

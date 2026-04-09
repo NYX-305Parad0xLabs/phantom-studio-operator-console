@@ -56,10 +56,10 @@ describe("Factory review page", () => {
       </Providers>,
     );
 
-    expect(await screen.findByText(/Publish state: Blocked pending approval/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Publish blocked until approval/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Approve run/i }));
 
-    expect(await screen.findByText(/Publish state: Unblocked after approval/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Publish unblocked/i)).toBeInTheDocument();
   });
 });

@@ -282,6 +282,8 @@ export type FactoryPlanRecord = {
   product_input: {
     product_name: string;
     product_brief: string;
+    planner_mode?: string | null;
+    planner_fallback_reason?: string | null;
   };
   influencer_lock_id: string;
   target_platform: string;
@@ -306,6 +308,7 @@ export type FactoryRunRecord = {
     metadata_uri?: string | null;
     provider_provenance: Record<string, unknown>;
     provider_manifest: Record<string, unknown>;
+    failure_reason?: string | null;
   };
   run_metadata: Record<string, unknown>;
   events: {
@@ -317,6 +320,23 @@ export type FactoryRunRecord = {
   }[];
   created_at: string;
   updated_at: string;
+};
+
+export type FactoryDiagnosticsSummary = {
+  total_runs: number;
+  status_counts: Record<string, number>;
+  review_pending: number;
+  stuck_runs: {
+    run_id: number;
+    status: string;
+    updated_at: string;
+    provider_status?: string | null;
+  }[];
+  failed_runs: {
+    run_id: number;
+    failure_reason?: string | null;
+  }[];
+  stuck_threshold_seconds: number;
 };
 
 export type FactoryRunCreateRequest = {
@@ -766,6 +786,39 @@ export const ControlPlaneClient = {
         state: "failed",
         data: buildMockFactoryRun(),
         error: error instanceof Error ? error.message : "Factory rejection failed",
+      };
+    }
+  },
+
+  async fetchFactoryDiagnostics(): Promise<FactoryEnvelope<FactoryDiagnosticsSummary>> {
+    if (integrationMode !== "live" || !controlPlaneBaseUrl) {
+      return {
+        state: "mocked",
+        data: {
+          total_runs: 1,
+          status_counts: { human_review: 1 },
+          review_pending: 1,
+          stuck_runs: [],
+          failed_runs: [],
+          stuck_threshold_seconds: 600,
+        },
+      };
+    }
+    try {
+      const response = await request<FactoryDiagnosticsSummary>("/api/factory/diagnostics");
+      return { state: "live", data: response };
+    } catch (error) {
+      return {
+        state: "failed",
+        data: {
+          total_runs: 0,
+          status_counts: {},
+          review_pending: 0,
+          stuck_runs: [],
+          failed_runs: [],
+          stuck_threshold_seconds: 600,
+        },
+        error: error instanceof Error ? error.message : "Factory diagnostics failed",
       };
     }
   },

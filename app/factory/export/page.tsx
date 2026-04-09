@@ -85,9 +85,14 @@ function FactoryExportContent() {
         <p className="text-sm text-paradox-gray-300">
           Manifest checksum: {provenance?.manifest_checksum ?? "Not available"}
         </p>
-        <pre className="max-h-64 overflow-auto rounded-xl bg-paradox-gray-900 p-3 text-xs text-paradox-gray-300">
-          {JSON.stringify(run?.sync.provider_manifest ?? {}, null, 2)}
-        </pre>
+        <div className="grid gap-3 md:grid-cols-2">
+          <pre className="max-h-64 overflow-auto rounded-xl bg-paradox-gray-900 p-3 text-xs text-paradox-gray-300">
+            {JSON.stringify(run?.sync.provider_manifest ?? {}, null, 2)}
+          </pre>
+          <pre className="max-h-64 overflow-auto rounded-xl bg-paradox-gray-900 p-3 text-xs text-paradox-gray-300">
+            {JSON.stringify(run?.sync.provider_provenance ?? {}, null, 2)}
+          </pre>
+        </div>
       </Card>
 
       <Card className="space-y-2 p-6">

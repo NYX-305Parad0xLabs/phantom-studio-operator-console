@@ -44,4 +44,18 @@ describe("factory control-plane client", () => {
     expect(result.state).toBe("failed");
     expect(result.data.id).toBeGreaterThan(0);
   });
+
+  it("returns mocked diagnostics envelope in mock mode", async () => {
+    vi.doMock("@/lib/config", () => ({
+      controlPlaneBaseUrl: "",
+      integrationMode: "mock",
+      operatorAuthToken: "operator-token",
+    }));
+
+    const { ControlPlaneClient } = await import("@/lib/api/controlPlane");
+    const result = await ControlPlaneClient.fetchFactoryDiagnostics();
+
+    expect(result.state).toBe("mocked");
+    expect(result.data.total_runs).toBeGreaterThan(0);
+  });
 });
