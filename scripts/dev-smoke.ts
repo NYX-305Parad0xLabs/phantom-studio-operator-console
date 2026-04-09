@@ -1,9 +1,12 @@
 import { spawnSync } from "node:child_process";
 
-const command = "npm";
+const command = process.platform === "win32" ? "npm.cmd" : "npm";
 const args = ["run", "test", "--", "tests/smoke/routes.test.tsx"];
 
-const result = spawnSync(command, args, { stdio: "inherit" });
+const result = spawnSync(command, args, {
+  stdio: "inherit",
+  shell: process.platform === "win32",
+});
 
 if (result.error) {
   console.error(result.error);

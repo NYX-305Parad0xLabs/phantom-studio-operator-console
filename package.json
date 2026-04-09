@@ -15,6 +15,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.96.1",
+    "array.prototype.tosorted": "^1.1.4",
     "axios": "^1.14.0",
     "next": "16.2.2",
     "react": "19.2.4",
