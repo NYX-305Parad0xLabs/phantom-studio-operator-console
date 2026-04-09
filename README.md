@@ -45,12 +45,20 @@ To run the console in demo-ready live mode, copy .env.example to .env.local and 
 Detailed per-screen status and fallback copies live in docs/demo-status.md.
 
 ## Autonomous UGC factory additions
-- New page: `/factory` for end-to-end product->plan->multi-shot output execution.
-- Control-plane integration:
-  - `POST /workflow-runs/{run_id}/ugc-factory-plan`
-  - `GET /workflow-runs/{run_id}/ugc-factory-plan`
-- Provider-gateway integration:
-  - `POST /api/video/multi-shot`
-  - `GET /api/video/backends`
-- Includes makeup tutorial default payload with influencer lock continuity and backend switching.
-- See `docs/autonomous-ugc-factory.md`.
+- Route-based operator flow:
+  - `/factory/intake`
+  - `/factory/plan`
+  - `/factory/run`
+  - `/factory/review`
+  - `/factory/export`
+- Live control-plane factory endpoints:
+  - `POST /api/factory/plans`
+  - `GET /api/factory/plans/{plan_id}`
+  - `POST /api/factory/runs`
+  - `GET /api/factory/runs/{run_id}`
+  - `POST /api/factory/runs/{run_id}/approve`
+  - `POST /api/factory/runs/{run_id}/reject`
+- Provider job progress is surfaced through synced control-plane run data.
+- UI state is explicitly labeled `Live`, `Mocked`, `Failed`, or `Waiting for review`.
+- No auto-publish behavior in factory flow; publish remains blocked until review approval.
+- See `docs/ugc-factory-console.md`.
