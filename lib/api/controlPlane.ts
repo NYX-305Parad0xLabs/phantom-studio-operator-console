@@ -262,6 +262,73 @@ export type UGCPostTaskResponse = {
   payload: Record<string, unknown>;
 };
 
+export type FactoryUiStateLabel = "live" | "mocked" | "failed" | "waiting_for_review";
+
+export type FactoryPlanCreateRequest = {
+  workflowRunId?: number;
+  productName: string;
+  productBrief: string;
+  influencerLockId: string;
+  targetPlatform: string;
+  rightsAsserted: boolean;
+  disclosedSynthetic: boolean;
+  disclosureText: string;
+  preferredBackend?: string;
+};
+
+export type FactoryPlanRecord = {
+  id: number;
+  workflow_run_id?: number | null;
+  product_input: {
+    product_name: string;
+    product_brief: string;
+  };
+  influencer_lock_id: string;
+  target_platform: string;
+  scene_breakdown: FactoryScene[];
+  provider_handoff_payload: Record<string, unknown>;
+  disclosure_text: string;
+  rights_asserted: boolean;
+  review_required: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FactoryRunRecord = {
+  id: number;
+  plan_id: number;
+  status: string;
+  review_status: "pending" | "approved" | "changes_requested" | "rejected";
+  sync: {
+    provider_job_id?: string | null;
+    provider_status?: string | null;
+    stitched_video_uri?: string | null;
+    metadata_uri?: string | null;
+    provider_provenance: Record<string, unknown>;
+    provider_manifest: Record<string, unknown>;
+  };
+  run_metadata: Record<string, unknown>;
+  events: {
+    id: number;
+    event_type: string;
+    actor?: string | null;
+    payload: Record<string, unknown>;
+    created_at: string;
+  }[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type FactoryRunCreateRequest = {
+  planId: number;
+};
+
+export type FactoryEnvelope<T> = {
+  state: FactoryUiStateLabel;
+  data: T;
+  error?: string;
+};
+
 export type WorkflowRunCreateRaw = {
   id: number;
   project_id: number;
@@ -558,12 +625,245 @@ export const ControlPlaneClient = {
       body: payload,
     });
   },
+
+  async createFactoryPlanRecord(
+    payload: FactoryPlanCreateRequest,
+  ): Promise<FactoryEnvelope<FactoryPlanRecord>> {
+    if (integrationMode !== "live" || !controlPlaneBaseUrl) {
+      return {
+        state: "mocked",
+        data: buildMockFactoryPlan(payload),
+      };
+    }
+    try {
+      const response = await request<FactoryPlanRecord>("/api/factory/plans", {
+        method: "POST",
+        body: {
+          workflowRunId: payload.workflowRunId,
+          productName: payload.productName,
+          productBrief: payload.productBrief,
+          influencerLockId: payload.influencerLockId,
+          targetPlatform: payload.targetPlatform,
+          rightsAsserted: payload.rightsAsserted,
+          disclosedSynthetic: payload.disclosedSynthetic,
+          disclosureText: payload.disclosureText,
+          preferredBackend: payload.preferredBackend,
+        },
+      });
+      return { state: "live", data: response };
+    } catch (error) {
+      return {
+        state: "failed",
+        data: buildMockFactoryPlan(payload),
+        error: error instanceof Error ? error.message : "Factory plan request failed",
+      };
+    }
+  },
+
+  async fetchFactoryPlanRecord(planId: number): Promise<FactoryEnvelope<FactoryPlanRecord>> {
+    if (integrationMode !== "live" || !controlPlaneBaseUrl) {
+      return { state: "mocked", data: buildMockFactoryPlan() };
+    }
+    try {
+      const response = await request<FactoryPlanRecord>(`/api/factory/plans/${planId}`);
+      return { state: "live", data: response };
+    } catch (error) {
+      return {
+        state: "failed",
+        data: buildMockFactoryPlan(),
+        error: error instanceof Error ? error.message : "Factory plan lookup failed",
+      };
+    }
+  },
+
+  async createFactoryRunRecord(
+    payload: FactoryRunCreateRequest,
+  ): Promise<FactoryEnvelope<FactoryRunRecord>> {
+    if (integrationMode !== "live" || !controlPlaneBaseUrl) {
+      return { state: "mocked", data: buildMockFactoryRun(payload.planId) };
+    }
+    try {
+      const response = await request<FactoryRunRecord>("/api/factory/runs", {
+        method: "POST",
+        body: payload,
+      });
+      return { state: "live", data: response };
+    } catch (error) {
+      return {
+        state: "failed",
+        data: buildMockFactoryRun(payload.planId),
+        error: error instanceof Error ? error.message : "Factory run launch failed",
+      };
+    }
+  },
+
+  async fetchFactoryRunRecord(runId: number): Promise<FactoryEnvelope<FactoryRunRecord>> {
+    if (integrationMode !== "live" || !controlPlaneBaseUrl) {
+      const run = buildMockFactoryRun();
+      return {
+        state: run.status === "human_review" ? "waiting_for_review" : "mocked",
+        data: run,
+      };
+    }
+    try {
+      const response = await request<FactoryRunRecord>(`/api/factory/runs/${runId}`);
+      const state: FactoryUiStateLabel =
+        response.status === "human_review" ? "waiting_for_review" : "live";
+      return { state, data: response };
+    } catch (error) {
+      return {
+        state: "failed",
+        data: buildMockFactoryRun(),
+        error: error instanceof Error ? error.message : "Factory run status failed",
+      };
+    }
+  },
+
+  async approveFactoryRunRecord(
+    runId: number,
+    notes?: string,
+  ): Promise<FactoryEnvelope<FactoryRunRecord>> {
+    if (integrationMode !== "live" || !controlPlaneBaseUrl) {
+      const run = buildMockFactoryRun();
+      run.status = "approved";
+      run.review_status = "approved";
+      run.run_metadata.publish_prepare_allowed = true;
+      return { state: "mocked", data: run };
+    }
+    try {
+      const response = await request<FactoryRunRecord>(`/api/factory/runs/${runId}/approve`, {
+        method: "POST",
+        body: { notes: notes ?? "" },
+      });
+      return { state: "live", data: response };
+    } catch (error) {
+      return {
+        state: "failed",
+        data: buildMockFactoryRun(),
+        error: error instanceof Error ? error.message : "Factory approval failed",
+      };
+    }
+  },
+
+  async rejectFactoryRunRecord(
+    runId: number,
+    notes?: string,
+  ): Promise<FactoryEnvelope<FactoryRunRecord>> {
+    if (integrationMode !== "live" || !controlPlaneBaseUrl) {
+      const run = buildMockFactoryRun();
+      run.status = "rejected";
+      run.review_status = "rejected";
+      return { state: "mocked", data: run };
+    }
+    try {
+      const response = await request<FactoryRunRecord>(`/api/factory/runs/${runId}/reject`, {
+        method: "POST",
+        body: { notes: notes ?? "" },
+      });
+      return { state: "live", data: response };
+    } catch (error) {
+      return {
+        state: "failed",
+        data: buildMockFactoryRun(),
+        error: error instanceof Error ? error.message : "Factory rejection failed",
+      };
+    }
+  },
 };
 
 export const controlPlane = {
   createUGCPlan: (runId: number, payload: FactoryPlanRequest) =>
     ControlPlaneClient.createFactoryPlan(runId, payload),
 };
+
+function buildMockFactoryPlan(
+  payload?: FactoryPlanCreateRequest,
+): FactoryPlanRecord {
+  const productName = payload?.productName ?? "Mock Product";
+  const productBrief = payload?.productBrief ?? "Mock product brief";
+  const lockId = payload?.influencerLockId ?? "luna-v2";
+  const platform = payload?.targetPlatform ?? "tiktok";
+  return {
+    id: 9001,
+    workflow_run_id: payload?.workflowRunId ?? 1,
+    product_input: {
+      product_name: productName,
+      product_brief: productBrief,
+    },
+    influencer_lock_id: lockId,
+    target_platform: platform,
+    scene_breakdown: [
+      {
+        shot_id: "scene-1-intro",
+        duration_seconds: 4,
+        prompt: `Intro for ${productName} with ${lockId}.`,
+      },
+      {
+        shot_id: "scene-2-demo",
+        duration_seconds: 6,
+        prompt: "Product demonstration with identity lock continuity.",
+      },
+      {
+        shot_id: "scene-3-before-after",
+        duration_seconds: 6,
+        prompt: "Before/after transition and benefits summary.",
+      },
+      {
+        shot_id: "scene-4-cta",
+        duration_seconds: 4,
+        prompt: "Call-to-action with synthetic disclosure.",
+      },
+    ],
+    provider_handoff_payload: {
+      backend: payload?.preferredBackend ?? "mock",
+      consistency_lock: lockId,
+      target_platforms: [platform],
+    },
+    disclosure_text: payload?.disclosureText ?? "This is AI-generated synthetic content.",
+    rights_asserted: payload?.rightsAsserted ?? true,
+    review_required: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function buildMockFactoryRun(planId = 9001): FactoryRunRecord {
+  return {
+    id: 7001,
+    plan_id: planId,
+    status: "human_review",
+    review_status: "pending",
+    sync: {
+      provider_job_id: "mock-job-001",
+      provider_status: "completed",
+      stitched_video_uri: "https://mock.local/factory-run-7001.mp4",
+      metadata_uri: "https://mock.local/factory-run-7001.json",
+      provider_provenance: {
+        provider: "mock",
+        synthetic: true,
+        disclosure_required: true,
+      },
+      provider_manifest: {
+        manifest_id: "mock-manifest-001",
+        synthetic: true,
+      },
+    },
+    run_metadata: {
+      publish_prepare_allowed: false,
+    },
+    events: [
+      {
+        id: 1,
+        event_type: "run_created",
+        actor: "operator",
+        payload: { plan_id: planId },
+        created_at: new Date().toISOString(),
+      },
+    ],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+}
 
 const mockRunDetail: WorkflowRunResponseRaw = {
   id: mockRun.id,
