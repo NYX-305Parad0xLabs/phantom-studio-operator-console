@@ -12,6 +12,7 @@ This document explains which operator-console surfaces are wired to live backend
 | Provenance | Control-plane provenance bundles, provider traces, and audit events stream live when the run ID and base URL are configured. | Falls back to the canned manifest/traces plus an inline warning when the fetch fails. |
 | Publish scheduling | Querying /publish-jobs/{id} reflects the live job status in integration mode=live. | Scheduler buttons keep the Mock writes guardrail until a prepared live job exists, even when the card is showing mock data. |
 | Settings & health | Polls /health/live and /health/ready for both services whenever integration mode=live. | Falls back to the mock connection status set while calling out that the data is mocked when the health checks fail. |
+| Factory run diagnostics | Polls control-plane run + diagnostics endpoints to show transition timeline, stuck/failed counters, and provider errors. | Backs off polling + shows safe fallback data with explicit Mock/Failed labeling when live sync fails. |
 
 ## What is fully live
 - Control-plane read endpoints (/workflow-runs, /provenance, /publish-jobs) reply with real data whenever the URLs, tokens, and integration mode are configured.

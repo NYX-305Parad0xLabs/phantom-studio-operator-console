@@ -1,37 +1,50 @@
 # UGC Factory Console
 
-Operator console now ships a real factory vertical slice with route-by-route progression:
+Operator console ships a real factory vertical slice with route-by-route progression:
 
 - `/factory/intake`: product brief + platform + influencer lock input with mandatory rights/disclosure assertions
-- `/factory/plan`: displays generated scene breakdown and provider handoff payload summary
-- `/factory/run`: polls run status from control-plane (`queued` -> `running` -> `human_review`)
-- `/factory/review`: approval/rejection gate with explicit publish-blocked state until approval
-- `/factory/export`: provenance + export bundle visibility
+- `/factory/plan`: generated scene breakdown, planner mode (`nulla` vs fallback), and provider handoff summary
+- `/factory/run`: run timeline, diagnostics, provider failure visibility, backoff polling, and safe retry-from-plan control
+- `/factory/review`: human approval/rejection gate with explicit publish blocked/unblocked state
+- `/factory/export`: provenance, provider manifest/provenance payloads, and export bundle visibility
 
 ## Backend wiring
 
-The UI uses typed control-plane clients for:
+Typed control-plane client calls:
+
 - `POST /api/factory/plans`
 - `GET /api/factory/plans/{plan_id}`
 - `POST /api/factory/runs`
 - `GET /api/factory/runs/{run_id}`
 - `POST /api/factory/runs/{run_id}/approve`
 - `POST /api/factory/runs/{run_id}/reject`
+- `GET /api/factory/diagnostics`
 
-Provider-gateway status is surfaced through control-plane run synchronization fields (`sync.provider_status`, URIs, provenance/manifest metadata).
+Provider job progress still arrives through synced control-plane run fields (`sync.provider_status`, URIs, provenance/manifest metadata).
+
+## Operator visibility improvements
+
+- Explicit transition timeline from `transition_trail` / run events
+- Provider failure reason panel (`sync.failure_reason`, `provider_error`, `last_sync_error`)
+- Clear backend mode label (`Live provider mode` vs `Mock/stub provider mode`)
+- Diagnostics snapshot (`total_runs`, status counts, stuck/failed totals)
+- Safe retry path: create a new run from the same plan (no auto-publish)
+- Polling resilience: automatic interval backoff on errors + manual refresh + pause/resume polling
 
 ## State labeling
 
-Each factory page shows an explicit state badge:
+Each factory page shows one state badge:
+
 - `Live`: backend call succeeded in live mode
-- `Mocked`: integration mode is mock or fallback mock data is used intentionally
-- `Failed`: backend call failed; UI keeps safe fallback data visible
-- `Waiting for review`: run reached human-review gate
+- `Mocked`: integration mode is mock or intentional fallback data is active
+- `Failed`: backend call failed; safe fallback data remains visible
+- `Waiting for review`: run is at mandatory human-review gate
 
 ## Safety positioning
 
 The factory UI never auto-publishes. It enforces operator checkpoints:
+
 - required disclosure banner
 - rights assertion checkbox
 - synthetic disclosure checkbox
-- publish blocked indicator until review approval sets `publish_prepare_allowed=true`
+- publish blocked indicator until approval sets `publish_prepare_allowed=true`

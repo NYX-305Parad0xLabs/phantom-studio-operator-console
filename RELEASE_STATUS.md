@@ -18,3 +18,4 @@
 - Several write flows remain intentionally mocked/simulated for safety until backend contracts are fully validated.
 - Browser e2e (Playwright) requires local browser install in CI/runtime.
 - No auto-publish behavior (intentional safety boundary).
+- Live/mock mode labeling now covers planner fallback, provider stub mode, and diagnostics panel, but full pilot-readiness still depends on stable control-plane/provider production infrastructure.

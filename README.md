@@ -17,7 +17,7 @@ See docs/demo-status.md for the deeper truth table on every screen.
 
 ## Fully live flows
 - Control-plane read-only endpoints (/workflow-runs, /provenance, /publish-jobs) answer immediately whenever the URLs, tokens, and integration mode are configured.
-- Provider-gateway ingest ? transcription ? analysis ? clip selection reads run live as soon as the provider URL/token and default artifact IDs are supplied.
+- Provider-gateway ingest -> transcription -> analysis -> clip selection reads run live as soon as the provider URL/token and default artifact IDs are supplied.
 - The settings + health dashboard polls the real /health endpoints so the UI can declare when each backend is live.
 
 ## Live with fallback
@@ -59,6 +59,8 @@ Detailed per-screen status and fallback copies live in docs/demo-status.md.
   - `POST /api/factory/runs/{run_id}/approve`
   - `POST /api/factory/runs/{run_id}/reject`
 - Provider job progress is surfaced through synced control-plane run data.
+- Factory run page includes transition timeline, diagnostics summary, provider error visibility, and polling backoff controls.
+- Factory plan page exposes planner fallback mode/reason when NULLA falls back to local planning.
 - UI state is explicitly labeled `Live`, `Mocked`, `Failed`, or `Waiting for review`.
 - No auto-publish behavior in factory flow; publish remains blocked until review approval.
 - See `docs/ugc-factory-console.md`.
