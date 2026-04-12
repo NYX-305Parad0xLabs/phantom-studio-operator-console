@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "verify": "sh scripts/verify.sh",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
     "dev:smoke": "ts-node scripts/dev-smoke.ts"
   },
   "dependencies": {
