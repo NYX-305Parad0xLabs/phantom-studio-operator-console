@@ -83,3 +83,4 @@ Honest UI status rules:
 
 - Current status: **demo-ready, dev-only**
 - Not yet pilot-ready or production-ready.
+- Release checks are cross-platform through `npm run verify`.

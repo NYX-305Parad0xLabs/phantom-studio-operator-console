@@ -11,6 +11,7 @@
 - `npm test` -> pass
 - `npm run build` -> pass
 - `npx playwright test` -> pass (chromium smoke)
+- `npm run verify` -> pass
 
 ## Readiness
 - Classification: **demo-ready, dev-only**
