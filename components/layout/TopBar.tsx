@@ -43,10 +43,8 @@ export function TopBar() {
         </div>
         <div className="text-right">
           <p className="text-xs text-paradox-gray-400">Job ID</p>
-          <p className="text-sm font-semibold text-white">
-            {currentJobId ?? "—"}
-          </p>
-          <p className="text-[11px] text-paradox-gray-500">
+          <p className="text-sm font-semibold text-white">{currentJobId ?? "--"}</p>
+          <p className="text-[11px] text-paradox-gray-500" suppressHydrationWarning>
             Updated {new Date(updatedAt).toLocaleTimeString()}
           </p>
         </div>
